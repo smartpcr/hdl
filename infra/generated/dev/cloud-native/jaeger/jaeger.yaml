@@ -1,0 +1,461 @@
+---
+apiVersion: v1
+data:
+  password: Y2hhbmdlbWU=
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-elasticsearch
+  namespace: jaeger
+type: Opaque
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-agent
+  namespace: jaeger
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: collector
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-collector
+  namespace: jaeger
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-query
+  namespace: jaeger
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: spark
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-spark
+  namespace: jaeger
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-agent
+  namespace: jaeger
+spec:
+  ports:
+  - name: zipkin-compact
+    port: 5775
+    protocol: UDP
+    targetPort: zipkin-compact
+  - name: jaeger-compact
+    port: 6831
+    protocol: UDP
+    targetPort: jaeger-compact
+  - name: jaeger-binary
+    port: 6832
+    protocol: UDP
+    targetPort: jaeger-binary
+  - name: http
+    port: 5778
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/name: jaeger
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: collector
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-collector
+  namespace: jaeger
+spec:
+  ports:
+  - name: grpc
+    port: 14250
+    protocol: TCP
+    targetPort: grpc
+  - name: tchannel
+    port: 14267
+    protocol: TCP
+    targetPort: tchannel
+  - name: http
+    port: 14268
+    protocol: TCP
+    targetPort: http
+  - name: zipkin
+    port: 9411
+    protocol: TCP
+    targetPort: zipkin
+  selector:
+    app.kubernetes.io/component: collector
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/name: jaeger
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-query
+  namespace: jaeger
+spec:
+  ports:
+  - name: query
+    port: 80
+    protocol: TCP
+    targetPort: query
+  selector:
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/name: jaeger
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-agent
+  namespace: jaeger
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: agent
+      app.kubernetes.io/instance: jaeger
+      app.kubernetes.io/name: jaeger
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: agent
+        app.kubernetes.io/instance: jaeger
+        app.kubernetes.io/name: jaeger
+    spec:
+      containers:
+      - env:
+        - name: REPORTER_GRPC_HOST_PORT
+          value: jaeger-collector:14250
+        image: jaegertracing/jaeger-agent:1.13.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /
+            port: admin
+        name: jaeger-agent
+        ports:
+        - containerPort: 5775
+          name: zipkin-compact
+          protocol: UDP
+        - containerPort: 6831
+          name: jaeger-compact
+          protocol: UDP
+        - containerPort: 6832
+          name: jaeger-binary
+          protocol: UDP
+        - containerPort: 5778
+          name: http
+          protocol: TCP
+        - containerPort: 14271
+          name: admin
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: admin
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 256m
+            memory: 128Mi
+      dnsPolicy: ClusterFirst
+      nodeSelector: {}
+      serviceAccountName: jaeger-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    sidecar.istio.io/inject: "false"
+  labels:
+    app.kubernetes.io/component: collector
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-collector
+  namespace: jaeger
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: collector
+      app.kubernetes.io/instance: jaeger
+      app.kubernetes.io/name: jaeger
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: collector
+        app.kubernetes.io/instance: jaeger
+        app.kubernetes.io/name: jaeger
+    spec:
+      containers:
+      - env:
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: jaeger-elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch-client.elasticsearch.svc.cluster.local:9200
+        - name: ES_USERNAME
+          value: elastic
+        image: jaegertracing/jaeger-collector:1.13.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /
+            port: admin
+        name: jaeger-collector
+        ports:
+        - containerPort: 14250
+          name: grpc
+          protocol: TCP
+        - containerPort: 14267
+          name: tchannel
+          protocol: TCP
+        - containerPort: 14268
+          name: http
+          protocol: TCP
+        - containerPort: 14269
+          name: admin
+          protocol: TCP
+        - containerPort: 9411
+          name: zipkin
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: admin
+        resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts: null
+      dnsPolicy: ClusterFirst
+      nodeSelector: {}
+      restartPolicy: Always
+      serviceAccountName: jaeger-collector
+      volumes: null
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: query
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-query
+  namespace: jaeger
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: query
+      app.kubernetes.io/instance: jaeger
+      app.kubernetes.io/name: jaeger
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: query
+        app.kubernetes.io/instance: jaeger
+        app.kubernetes.io/name: jaeger
+    spec:
+      containers:
+      - env:
+        - name: SPAN_STORAGE_TYPE
+          value: elasticsearch
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: jaeger-elasticsearch
+        - name: ES_SERVER_URLS
+          value: http://elasticsearch-client.elasticsearch.svc.cluster.local:9200
+        - name: ES_USERNAME
+          value: elastic
+        - name: QUERY_BASE_PATH
+          value: null
+        image: jaegertracing/jaeger-query:1.13.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /
+            port: admin
+        name: jaeger-query
+        ports:
+        - containerPort: 16686
+          name: query
+          protocol: TCP
+        - containerPort: 16687
+          name: admin
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: admin
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 256m
+            memory: 128Mi
+        volumeMounts: null
+      - env:
+        - name: REPORTER_GRPC_HOST_PORT
+          value: jaeger-collector:14250
+        image: jaegertracing/jaeger-agent:1.13.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /
+            port: admin
+        name: jaeger-agent-sidecar
+        ports:
+        - containerPort: 14271
+          name: admin
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: admin
+      dnsPolicy: ClusterFirst
+      nodeSelector: {}
+      restartPolicy: Always
+      serviceAccountName: jaeger-query
+      volumes: null
+
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  labels:
+    app.kubernetes.io/component: spark
+    app.kubernetes.io/instance: jaeger
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/name: jaeger
+    helm.sh/chart: jaeger-0.13.0
+  name: jaeger-spark
+  namespace: jaeger
+spec:
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/component: spark
+            app.kubernetes.io/instance: jaeger
+            app.kubernetes.io/name: jaeger
+        spec:
+          containers:
+          - env:
+            - name: STORAGE
+              value: elasticsearch
+            - name: ES_NODES
+              value: http://elasticsearch-client.elasticsearch.svc.cluster.local:9200
+            - name: ES_NODES_WAN_ONLY
+              value: "false"
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: jaeger-elasticsearch
+            - name: ES_USERNAME
+              value: elastic
+            image: jaegertracing/spark-dependencies:latest
+            imagePullPolicy: Always
+            name: jaeger-spark
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 256m
+                memory: 128Mi
+          nodeSelector: {}
+          restartPolicy: OnFailure
+          serviceAccountName: jaeger-spark
+  schedule: 49 23 * * *
+  successfulJobsHistoryLimit: 5
+
