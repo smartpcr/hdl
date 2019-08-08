@@ -1,0 +1,11 @@
+image:
+  repository: oneesdevacr.azurecr.io
+  name: 1es/product-catalog-api
+  tag: latest
+env:
+  ASPNETCORE_ENVIRONMENT: Development
+  tenant: onees-dev
+  role: product-catalog-api
+dns:
+  domain: xiaodong.world
+  sslCert: sslcert-dev-xiaodong-world

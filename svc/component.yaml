@@ -1,4 +1,4 @@
 name: services
 subcomponents:
   - name: product-catalog-api
-    source: "./product-catalog-api"
+    source: "./components/product-catalog-api"

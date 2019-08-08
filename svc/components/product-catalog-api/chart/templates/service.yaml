@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "product-catalog-api"
+  namespace: default
+spec:
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 6001
+    name: "product-catalog-api-https"
+  selector:
+    app: "product-catalog-api"

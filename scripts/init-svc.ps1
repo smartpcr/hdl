@@ -1,6 +1,3 @@
-param(
-    [string]$ServiceManifestFile = "~/work/github/aks-bootstrap/deploy/examples/1es/services.yaml"
-)
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
@@ -13,9 +10,8 @@ $GitOpsRepoFolder = Join-Path $gitRootFolder $GitOpsRepoFolder
 $svcFolder = Join-Path $gitRootFolder "svc"
 
 Set-Location $svcFolder
-fab add cloud-native `
-    --source https://github.com/microsoft/fabrikate-definitions `
-    --path definitions/fabrikate-cloud-native
+fab install
+fab generate dev
 
 
 Set-Location $gitRootFolder

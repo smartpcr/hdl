@@ -1,0 +1,9 @@
+config:
+subcomponents:
+  product-catalog-api:
+    config:
+      env:
+        ASPNETCORE_ENVIRONMENT: Integration
+        role: Integration
+      image:
+        tag: "201908081234"
