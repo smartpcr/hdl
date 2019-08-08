@@ -1,3 +1,0 @@
-[submodule "manifest"]
-	path = manifest
-	url = https://github.com/smartpcr/git-deploy.git
