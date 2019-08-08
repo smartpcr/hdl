@@ -1,4 +1,5 @@
 name: infra
+type: component
 subcomponents:
 - name: cloud-native
   type: component

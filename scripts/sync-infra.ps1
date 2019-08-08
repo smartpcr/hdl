@@ -11,29 +11,24 @@ while ((-not (Test-Path (Join-Path $gitRootFolder ".git"))) -and (-not $gitRootF
 }
 $GitOpsRepoFolder = Join-Path $gitRootFolder $GitOpsRepoFolder
 $infraFolder = Join-Path $gitRootFolder "infra"
-$svcFolder = Join-Path $gitRootFolder "svc"
 
-$destinationComponentFolder = Join-Path $GitOpsRepoFolder "infra" "generated"
+Write-Host "sync infra/generated"
+$destinationComponentFolder = Join-Path (Join-Path $GitOpsRepoFolder "infra") "generated"
 if (Test-Path $destinationComponentFolder) {
     Remove-Item $destinationComponentFolder -Recurse -Force
 }
 if (Test-Path (Join-Path $infraFolder "generated")) {
-    Move-Item -Path (Join-Path $infraFolder "generated") -Destination $destinationComponentFolder -Force
+    Move-Item -Path (Join-Path $infraFolder "generated") -Destination (Join-Path $GitOpsRepoFolder "infra") -Force
 }
 
-$childGitFolders = Get-ChildItem -Path $destinationComponentFolder -Recurse | Where-Object { $_.Name -eq ".git" }
-if ($childGitFolders) {
-    $childGitFolders | ForEach-Object {
-        Remove-Item $_ -Recurse -Force
-    }
-}
-
-fab install $svcFolder
-$destinationComponentFolder = Join-Path $GitOpsRepoFolder "svc" "components"
+Write-Host "sync infra/config"
+$destinationComponentFolder = Join-Path (Join-Path $GitOpsRepoFolder "infra") "config"
 if (Test-Path $destinationComponentFolder) {
     Remove-Item $destinationComponentFolder -Recurse -Force
 }
-Move-Item -Path $svcFolder -Destination (Join-Path $GitOpsRepoFolder "svc")
+if (Test-Path (Join-Path $infraFolder "config")) {
+    Move-Item -Path (Join-Path $infraFolder "config") -Destination (Join-Path $GitOpsRepoFolder "infra") -Force
+}
 
 Set-Location $GitOpsRepoFolder
 git add .
