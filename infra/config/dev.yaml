@@ -1,0 +1,6 @@
+subcomponents:
+  cloud-native:
+    subcomponents:
+      fluentd:
+        config:
+          dnamespace: logging
