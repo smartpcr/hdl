@@ -13,6 +13,9 @@ subcomponents:
                   requests:
                     cpu: 25m
                     memory: 256Mi
+              data:
+                persistence:
+                  size: 10Gi
   prometheus-operator:
     config:
       alertmanager:
