@@ -1,0 +1,3 @@
+name: product-catalog-api
+generator: "helm"
+path: "./chart"

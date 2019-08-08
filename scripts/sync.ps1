@@ -13,12 +13,14 @@ $GitOpsRepoFolder = Join-Path $gitRootFolder $GitOpsRepoFolder
 $infraFolder = Join-Path $gitRootFolder "infra"
 $svcFolder = Join-Path $gitRootFolder "svc"
 
-fab install $infraFolder
-$destinationComponentFolder = Join-Path $GitOpsRepoFolder "infra" "components"
+$destinationComponentFolder = Join-Path $GitOpsRepoFolder "infra" "generated"
 if (Test-Path $destinationComponentFolder) {
     Remove-Item $destinationComponentFolder -Recurse -Force
 }
-Move-Item -Path (Join-Path $infraFolder "components") -Destination (Join-Path $GitOpsRepoFolder "infra") -Force
+if (Test-Path (Join-Path $infraFolder "generated")) {
+    Move-Item -Path (Join-Path $infraFolder "generated") -Destination $destinationComponentFolder -Force
+}
+
 $childGitFolders = Get-ChildItem -Path $destinationComponentFolder -Recurse | Where-Object { $_.Name -eq ".git" }
 if ($childGitFolders) {
     $childGitFolders | ForEach-Object {

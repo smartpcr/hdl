@@ -1,0 +1,5 @@
+subcomponents:
+  product-catalog-api:
+    config:
+      image:
+        tag: 201908080234

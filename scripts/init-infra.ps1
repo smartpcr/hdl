@@ -17,5 +17,8 @@ fab add cloud-native `
     --source https://github.com/microsoft/fabrikate-definitions `
     --path definitions/fabrikate-cloud-native
 
+fab install
+# add modification here 
+fab generate prod azure
 
 Set-Location $gitRootFolder
