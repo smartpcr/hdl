@@ -11,7 +11,7 @@ $infraFolder = Join-Path $gitRootFolder "infra"
 
 Set-Location $infraFolder
 fab add cloud-native `
-    --source https://github.com/microsoft/fabrikate-definitions `
+    --source https://github.com/smartpcr/fabrikate-definitions `
     --path definitions/fabrikate-cloud-native
 
 fab install
