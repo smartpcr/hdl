@@ -14,7 +14,7 @@ metadata:
     heritage: Tiller
     release: kibana
   name: kibana
-  namespace: kibana
+  namespace: logging
 
 ---
 apiVersion: v1
@@ -47,7 +47,7 @@ metadata:
     heritage: Tiller
     release: kibana
   name: kibana-test
-  namespace: kibana
+  namespace: logging
 
 ---
 apiVersion: v1
@@ -59,7 +59,7 @@ metadata:
     heritage: Tiller
     release: kibana
   name: kibana
-  namespace: kibana
+  namespace: logging
 spec:
   ports:
   - port: 443
@@ -82,7 +82,7 @@ metadata:
     heritage: Tiller
     release: kibana
   name: kibana-test
-  namespace: kibana
+  namespace: logging
 spec:
   containers:
   - command:
@@ -128,7 +128,7 @@ metadata:
     heritage: Tiller
     release: kibana
   name: kibana
-  namespace: kibana
+  namespace: logging
 spec:
   replicas: 1
   revisionHistoryLimit: 3

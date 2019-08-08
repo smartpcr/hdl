@@ -38,7 +38,7 @@ metadata:
     heritage: Tiller
     release: elasticsearch-curator
   name: elasticsearch-curator-config
-  namespace: elasticsearch
+  namespace: logging
 
 ---
 apiVersion: batch/v1beta1
@@ -50,7 +50,7 @@ metadata:
     heritage: Tiller
     release: elasticsearch-curator
   name: elasticsearch-curator
-  namespace: elasticsearch
+  namespace: logging
 spec:
   jobTemplate:
     metadata:

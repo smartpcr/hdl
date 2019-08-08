@@ -1,6 +1,15 @@
+config:
 subcomponents:
   cloud-native:
     subcomponents:
-      fluentd:
-        config:
-          dnamespace: logging
+      elasticsearch-fluentd-kibana:
+        subcomponents:
+          elasticsearch:
+            config:
+              client:
+                resources:
+                  limits:
+                    memory: "1024Mi"
+                  requests:
+                    cpu: 25m
+                    memory: 256Mi

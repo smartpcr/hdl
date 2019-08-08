@@ -399,7 +399,7 @@ metadata:
     helm.sh/chart: fluentd-elasticsearch-2.0.7
     kubernetes.io/cluster-service: "true"
   name: fluentd-elasticsearch
-  namespace: fluentd
+  namespace: logging
 
 ---
 apiVersion: v1
@@ -413,7 +413,7 @@ metadata:
     helm.sh/chart: fluentd-elasticsearch-2.0.7
     kubernetes.io/cluster-service: "true"
   name: fluentd-elasticsearch
-  namespace: fluentd
+  namespace: logging
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -427,7 +427,7 @@ metadata:
     helm.sh/chart: fluentd-elasticsearch-2.0.7
     kubernetes.io/cluster-service: "true"
   name: fluentd-elasticsearch
-  namespace: fluentd
+  namespace: logging
 rules:
 - apiGroups:
   - ""
@@ -451,7 +451,7 @@ metadata:
     helm.sh/chart: fluentd-elasticsearch-2.0.7
     kubernetes.io/cluster-service: "true"
   name: fluentd-elasticsearch
-  namespace: fluentd
+  namespace: logging
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -459,7 +459,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: fluentd-elasticsearch
-  namespace: fluentd
+  namespace: logging
 
 ---
 apiVersion: apps/v1
@@ -473,7 +473,7 @@ metadata:
     helm.sh/chart: fluentd-elasticsearch-2.0.7
     kubernetes.io/cluster-service: "true"
   name: fluentd-elasticsearch
-  namespace: fluentd
+  namespace: logging
 spec:
   selector:
     matchLabels:
