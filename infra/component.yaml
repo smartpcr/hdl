@@ -1,4 +1,4 @@
-name: hdl
+name: infra
 subcomponents:
 - name: cloud-native
   type: component
