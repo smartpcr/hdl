@@ -6,7 +6,6 @@ $gitRootFolder = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 while ((-not (Test-Path (Join-Path $gitRootFolder ".git"))) -and (-not $gitRootFolder.ToUpper().EndsWith("HDL"))) {
     $gitRootFolder = Split-Path $gitRootFolder -Parent
 }
-$GitOpsRepoFolder = Join-Path $gitRootFolder $GitOpsRepoFolder
 $svcFolder = Join-Path $gitRootFolder "svc"
 
 Set-Location $svcFolder
