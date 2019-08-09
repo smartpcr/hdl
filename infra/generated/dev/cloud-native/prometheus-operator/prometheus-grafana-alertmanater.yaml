@@ -1,79 +1,83 @@
 ---
+# Source: prometheus-operator/charts/grafana/templates/podsecuritypolicy.yaml
+
 apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  annotations:
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
-    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
+  name: prometheus-grafana-alertmanater
+  namespace: default
   labels:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
 spec:
-  allowPrivilegeEscalation: false
-  fsGroup:
-    rule: RunAsAny
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
   requiredDropCapabilities:
-  - FOWNER
-  - FSETID
-  - KILL
-  - SETGID
-  - SETUID
-  - SETPCAP
-  - NET_BIND_SERVICE
-  - NET_RAW
-  - SYS_CHROOT
-  - MKNOD
-  - AUDIT_WRITE
-  - SETFCAP
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
+    # Default set from Docker, without DAC_OVERRIDE or CHOWN
+    - FOWNER
+    - FSETID
+    - KILL
+    - SETGID
+    - SETUID
+    - SETPCAP
+    - NET_BIND_SERVICE
+    - NET_RAW
+    - SYS_CHROOT
+    - MKNOD
+    - AUDIT_WRITE
+    - SETFCAP
   volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: false
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/tests/test-podsecuritypolicy.yaml
+
 apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  name: prometheus-grafana-alertmanater-test
   labels:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
 spec:
   allowPrivilegeEscalation: true
-  fsGroup:
-    rule: RunAsAny
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  runAsUser:
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  fsGroup:
     rule: RunAsAny
   seLinux:
     rule: RunAsAny
   supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
     rule: RunAsAny
   volumes:
   - configMap
@@ -83,275 +87,359 @@ spec:
   - secret
 
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/podsecuritypolicy.yaml
+
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  name: prometheus-grafana-alertmanater-kube-state-metrics
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
     helm.sh/chart: kube-state-metrics-2.0.0
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
 spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: MustRunAsNonRoot
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
   volumes:
-  - secret
+    - 'secret'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 1
+        max: 65535
+  readOnlyRootFilesystem: false
 
 ---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/psp.yaml
+
 apiVersion: extensions/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  labels:
+  labels:     
     app: prometheus-node-exporter
-    chart: prometheus-node-exporter-1.5.2
     heritage: Tiller
+    release: prometheus-grafana-alertmanater
+    chart: prometheus-node-exporter-1.5.2
     jobLabel: node-exporter
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
+    
+  name: prometheus-grafana-alertmanater-prometheus-node-exporter
 spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
+  privileged: false
+  # Required to prevent escalations to root.
+  # allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  #requiredDropCapabilities:
+  #  - ALL
+  # Allow core volume types.
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+    - 'hostPath'
   hostNetwork: true
+  hostIPC: false
   hostPID: true
   hostPorts:
-  - max: 65535
-    min: 0
-  privileged: false
-  readOnlyRootFilesystem: false
+    - min: 0
+      max: 65535
   runAsUser:
-    rule: RunAsAny
+    # Permits the container to run with root privileges as well.
+    rule: 'RunAsAny'
   seLinux:
-    rule: RunAsAny
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
   supplementalGroups:
+    rule: 'MustRunAs'
     ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
-  - hostPath
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  readOnlyRootFilesystem: false
 
 ---
+# Source: prometheus-operator/templates/alertmanager/psp.yaml
+
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
+  # Required to prevent escalations to root.
+  # allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  #requiredDropCapabilities:
+  #  - ALL
+  # Allow core volume types.
   volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    # Permits the container to run with root privileges as well.
+    rule: 'RunAsAny'
+  seLinux:
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  readOnlyRootFilesystem: false
+
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/psp.yaml
+
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  name: prometheus-grafana-alertma-admission
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade,post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
     app: prometheus-operator-admission
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
+  # Required to prevent escalations to root.
+  # allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  #requiredDropCapabilities:
+  #  - ALL
+  # Allow core volume types.
   volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    # Permits the container to run with root privileges as well.
+    rule: 'RunAsAny'
+  seLinux:
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  readOnlyRootFilesystem: false
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/psp.yaml
+
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
+  # Required to prevent escalations to root.
+  # allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  #requiredDropCapabilities:
+  #  - ALL
+  # Allow core volume types.
   volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    # Permits the container to run with root privileges as well.
+    rule: 'RunAsAny'
+  seLinux:
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  readOnlyRootFilesystem: false
 
 ---
+# Source: prometheus-operator/templates/prometheus/psp.yaml
+
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
   privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
+  # Required to prevent escalations to root.
+  # allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  #requiredDropCapabilities:
+  #  - ALL
+  # Allow core volume types.
   volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    # Permits the container to run with root privileges as well.
+    rule: 'RunAsAny'
+  seLinux:
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      # Forbid adding the root group.
+      - min: 0
+        max: 65535
+  readOnlyRootFilesystem: false
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/secret.yaml
+
 apiVersion: v1
-data:
-  admin-password: Z3JhZmFuYQ==
-  admin-user: YWRtaW4=
-  ldap-toml: ""
 kind: Secret
+metadata:
+  name: prometheus-grafana-alertmanater
+  namespace: default
+  labels:
+    app: grafana
+    chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
+    heritage: Tiller
+type: Opaque
+data:
+  admin-user: "YWRtaW4="
+  admin-password: "cHJvbS1vcGVyYXRvcg=="
+  ldap-toml: ""
+
+---
+# Source: prometheus-operator/templates/alertmanager/secret.yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-prometheus-grafana-alertma-alertmanager
+  labels:
+    app: prometheus-operator-alertmanager
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+data:
+  alertmanager.yaml: "Z2xvYmFsOgogIHJlc29sdmVfdGltZW91dDogNW0KcmVjZWl2ZXJzOgotIG5hbWU6ICJudWxsIgpyb3V0ZToKICBncm91cF9ieToKICAtIGpvYgogIGdyb3VwX2ludGVydmFsOiA1bQogIGdyb3VwX3dhaXQ6IDMwcwogIHJlY2VpdmVyOiAibnVsbCIKICByZXBlYXRfaW50ZXJ2YWw6IDEyaAogIHJvdXRlczoKICAtIG1hdGNoOgogICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICByZWNlaXZlcjogIm51bGwiCg=="
+
+---
+# Source: prometheus-operator/charts/grafana/templates/configmap-dashboard-provider.yaml
+
+apiVersion: v1
+kind: ConfigMap
 metadata:
   labels:
     app: grafana
     chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
-type: Opaque
-
----
-apiVersion: v1
-data:
-  alertmanager.yaml: Z2xvYmFsOgogIHJlc29sdmVfdGltZW91dDogNW0KcmVjZWl2ZXJzOgotIG5hbWU6ICJudWxsIgpyb3V0ZToKICBncm91cF9ieToKICAtIGpvYgogIGdyb3VwX2ludGVydmFsOiA1bQogIGdyb3VwX3dhaXQ6IDMwcwogIHJlY2VpdmVyOiAibnVsbCIKICByZXBlYXRfaW50ZXJ2YWw6IDEyaAogIHJvdXRlczoKICAtIG1hdGNoOgogICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICByZWNlaXZlcjogIm51bGwiCg==
-kind: Secret
-metadata:
-  labels:
-    app: prometheus-operator-alertmanager
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: alertmanager-prometheus-operator-alertmanager
-  namespace: prometheus
-
----
-apiVersion: v1
+  name: prometheus-grafana-alertmanater-config-dashboards
+  namespace: default
 data:
   provider.yaml: |-
     apiVersion: 1
@@ -363,18 +451,19 @@ data:
       disableDeletion: false
       options:
         path: /tmp/dashboards
+
+---
+# Source: prometheus-operator/charts/grafana/templates/configmap.yaml
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertmanater
+  namespace: default
   labels:
     app: grafana
     chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-config-dashboards
-  namespace: prometheus
-
----
-apiVersion: v1
 data:
   grafana.ini: |
     [analytics]
@@ -388,60 +477,67 @@ data:
     logs = /var/log/grafana
     plugins = /var/lib/grafana/plugins
     provisioning = /etc/grafana/provisioning
-kind: ConfigMap
-metadata:
-  labels:
-    app: grafana
-    chart: grafana-3.7.3
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/tests/test-configmap.yaml
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-grafana-alertmanater-test
+  labels:
+    app: prometheus-grafana-alertmanater
+    chart: "grafana-3.7.3"
+    heritage: "Tiller"
+    release: "prometheus-grafana-alertmanater"
 data:
   run.sh: |-
     @test "Test Health" {
-      url="http://prometheus-operator-grafana/api/health"
+      url="http://prometheus-grafana-alertmanater/api/health"
 
       code=$(curl -s -o /dev/null -I -w "%{http_code}" $url)
       [ "$code" == "200" ]
     }
-kind: ConfigMap
-metadata:
-  labels:
-    app: prometheus-operator-grafana
-    chart: grafana-3.7.3
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
 
 ---
+# Source: prometheus-operator/templates/grafana/configmaps-datasources.yaml
+
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-grafana-alertma-grafana-datasource
+  labels:
+    grafana_datasource: "1"
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   datasource.yaml: |-
     apiVersion: 1
     datasources:
     - name: Prometheus
       type: prometheus
-      url: http://prometheus-operator-prometheus:9090/
+      url: http://prometheus-grafana-alertma-prometheus:9090/
       access: proxy
       isDefault: true
-kind: ConfigMap
-metadata:
-  labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
-    grafana_datasource: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-datasource
-  namespace: prometheus
 
 ---
+# Source: prometheus-operator/templates/grafana/dashboards/etcd.yaml
+# Generated from 'etcd' from https://raw.githubusercontent.com/etcd-io/etcd/master/Documentation/op-guide/grafana.json
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-grafana-alertma-etcd
+  labels:
+    grafana_dashboard: "1"
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   etcd.json: |-
     {
@@ -1537,19 +1633,22 @@ data:
         "title": "etcd",
         "version": 215
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-cluster-rsrc-use.yaml
+# Generated from 'k8s-cluster-rsrc-use' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-cluster-rsrc-use
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-etcd
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-cluster-rsrc-use.json: |-
     {
@@ -2488,19 +2587,20 @@ data:
         "uid": "a6e7d1362e1ddbb79db21d5bb40d7137",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-coredns.yaml
+# Added manually, can be changed in-place.
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-coredns
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-cluster-rsrc-use
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-coredns.json: |-
     {
@@ -3811,19 +3911,22 @@ data:
         "uid": "vkQ0UHxik",
         "version": 1
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-node-rsrc-use.yaml
+# Generated from 'k8s-node-rsrc-use' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-node-rsrc-use
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-coredns
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-node-rsrc-use.json: |-
     {
@@ -4789,19 +4892,22 @@ data:
         "uid": "4ac4f123aae0ff6dbaf4f4f66120033b",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-resources-cluster.yaml
+# Generated from 'k8s-resources-cluster' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-resources-cluster
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-node-rsrc-use
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-resources-cluster.json: |-
     {
@@ -6260,19 +6366,22 @@ data:
         "uid": "efa86fd1d0c121a26444b636a3f509a8",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-resources-namespace.yaml
+# Generated from 'k8s-resources-namespace' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-resources-namespace
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-resources-cluster
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-resources-namespace.json: |-
     {
@@ -7215,19 +7324,22 @@ data:
         "uid": "85a562078cdf77779eaa1add43ccec1e",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-resources-pod.yaml
+# Generated from 'k8s-resources-pod' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-resources-pod
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-resources-namespace
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-resources-pod.json: |-
     {
@@ -8213,19 +8325,22 @@ data:
         "uid": "6581e46e4e5c7ba40a07646395ef7b23",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-resources-workload.yaml
+# Generated from 'k8s-resources-workload' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-resources-workload
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-resources-pod
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-resources-workload.json: |-
     {
@@ -9141,19 +9256,22 @@ data:
         "uid": "a164a7f0339f99e89cea5cb47e9be617",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/k8s-resources-workloads-namespace.yaml
+# Generated from 'k8s-resources-workloads-namespace' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-k8s-resources-workloads-namespace
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-resources-workload
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   k8s-resources-workloads-namespace.json: |-
     {
@@ -10105,19 +10223,22 @@ data:
         "uid": "a87fb0d919ec0ea5f6543124e16c42a5",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/nodes.yaml
+# Generated from 'nodes' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-nodes
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s-resources-workloads-namespace
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   nodes.json: |-
     {
@@ -11480,19 +11601,22 @@ data:
         "uid": "fa49a4706d07a042595b664c87fb33ea",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/persistentvolumesusage.yaml
+# Generated from 'persistentvolumesusage' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-persistentvolumesusage
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-nodes
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   persistentvolumesusage.json: |-
     {
@@ -12045,19 +12169,22 @@ data:
         "uid": "919b92a8e8041bd567af9edab12c840c",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/pods.yaml
+# Generated from 'pods' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-pods
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-persistentvolumesusage
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   pods.json: |-
     {
@@ -12717,19 +12844,22 @@ data:
         "uid": "ab4f13a9892a76a4d21ce8c2445bf4ea",
         "version": 0
     }
+---
+# Source: prometheus-operator/templates/grafana/dashboards/statefulset.yaml
+# Generated from 'statefulset' from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/grafana-dashboardDefinitions.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
+apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: prometheus-grafana-alertma-statefulset
   labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
     grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-pods
-  namespace: prometheus
-
----
-apiVersion: v1
+    app: prometheus-operator-grafana
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 data:
   statefulset.json: |-
     {
@@ -13635,39 +13765,9 @@ data:
         "uid": "a31c1f46e6f727cb37c0d731a7245005",
         "version": 0
     }
-kind: ConfigMap
-metadata:
-  labels:
-    app: prometheus-operator-grafana
-    chart: prometheus-operator-6.4.1
-    grafana_dashboard: "1"
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-statefulset
-  namespace: prometheus
-
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  finalizers:
-  - kubernetes.io/pvc-protection
-  labels:
-    app: grafana
-    chart: grafana-3.7.3
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: null
+# Source: prometheus-operator/charts/grafana/templates/serviceaccount.yaml
 
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -13675,11 +13775,13 @@ metadata:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
+  name: prometheus-grafana-alertmanater
+  namespace: default
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/tests/test-serviceaccount.yaml
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -13687,104 +13789,119 @@ metadata:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
+  name: prometheus-grafana-alertmanater-test
 
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/serviceaccount.yaml
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
     helm.sh/chart: kube-state-metrics-2.0.0
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
-
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
+  name: prometheus-grafana-alertmanater-kube-state-metrics
+imagePullSecrets:
+  []
+  
 ---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/serviceaccount.yaml
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
+  name: prometheus-grafana-alertmanater-prometheus-node-exporter
   labels:
     app: prometheus-node-exporter
-    chart: prometheus-node-exporter-1.5.2
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
-
+    chart: prometheus-node-exporter-1.5.2    
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+imagePullSecrets: 
+  []
+  
 ---
+# Source: prometheus-operator/templates/alertmanager/serviceaccount.yaml
+
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+imagePullSecrets:
+  []
+  
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/serviceaccount.yaml
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  name:  prometheus-grafana-alertma-admission
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade,post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
-
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 ---
+# Source: prometheus-operator/templates/prometheus-operator/serviceaccount.yaml
+
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+imagePullSecrets:
+  []
+  
 
 ---
+# Source: prometheus-operator/templates/prometheus/serviceaccount.yaml
+
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+imagePullSecrets:
+  []
+  
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/crd-alertmanager.yaml
+# Source https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/0prometheus-operator-0alertmanagerCustomResourceDefinition.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    helm.sh/hook: crd-install
   creationTimestamp: null
+  name: alertmanagers.monitoring.coreos.com
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: alertmanagers.monitoring.coreos.com
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+  annotations:
+    "helm.sh/hook": crd-install
 spec:
   group: monitoring.coreos.com
   names:
@@ -16177,19 +16294,21 @@ spec:
   version: v1
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/crd-podmonitor.yaml
+# Source https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/0prometheus-operator-0podmonitorCustomResourceDefinition.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    helm.sh/hook: crd-install
   creationTimestamp: null
+  name: podmonitors.monitoring.coreos.com
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: podmonitors.monitoring.coreos.com
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+  annotations:
+    "helm.sh/hook": crd-install
 spec:
   group: monitoring.coreos.com
   names:
@@ -16422,19 +16541,21 @@ spec:
   version: v1
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/crd-prometheus.yaml
+# Source https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/0prometheus-operator-0prometheusCustomResourceDefinition.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    helm.sh/hook: crd-install
   creationTimestamp: null
+  name: prometheuses.monitoring.coreos.com
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheuses.monitoring.coreos.com
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+  annotations:
+    "helm.sh/hook": crd-install
 spec:
   group: monitoring.coreos.com
   names:
@@ -19875,19 +19996,21 @@ spec:
   version: v1
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/crd-prometheusrules.yaml
+# Source https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/0prometheus-operator-0prometheusruleCustomResourceDefinition.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    helm.sh/hook: crd-install
   creationTimestamp: null
+  name: prometheusrules.monitoring.coreos.com
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheusrules.monitoring.coreos.com
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+  annotations:
+    "helm.sh/hook": crd-install
 spec:
   group: monitoring.coreos.com
   names:
@@ -20277,19 +20400,21 @@ spec:
   version: v1
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/crd-servicemonitor.yaml
+# Source: https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/0prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    helm.sh/hook: crd-install
   creationTimestamp: null
+  name: servicemonitors.monitoring.coreos.com
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: servicemonitors.monitoring.coreos.com
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
+  annotations:
+    "helm.sh/hook": crd-install
 spec:
   group: monitoring.coreos.com
   names:
@@ -20590,304 +20715,246 @@ spec:
   version: v1
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: prometheus-operator/charts/grafana/templates/clusterrole.yaml
+
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   labels:
     app: grafana
     chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-clusterrole
-  namespace: prometheus
+  name: prometheus-grafana-alertmanater-clusterrole
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - secrets
-  verbs:
-  - get
-  - watch
-  - list
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "watch", "list"]
 
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
     helm.sh/chart: kube-state-metrics-2.0.0
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
+  name: prometheus-grafana-alertmanater-kube-state-metrics
 rules:
-- apiGroups:
-  - certificates.k8s.io
+
+- apiGroups: ["certificates.k8s.io"]
   resources:
   - certificatesigningrequests
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - configmaps
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - batch
+  verbs: ["list", "watch"]
+
+- apiGroups: ["batch"]
   resources:
   - cronjobs
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  - apps
+  verbs: ["list", "watch"]
+
+- apiGroups: ["extensions", "apps"]
   resources:
   - daemonsets
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  - apps
+  verbs: ["list", "watch"]
+
+- apiGroups: ["extensions", "apps"]
   resources:
   - deployments
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - endpoints
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - autoscaling
+  verbs: ["list", "watch"]
+
+- apiGroups: ["autoscaling"]
   resources:
   - horizontalpodautoscalers
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - extensions
+  verbs: ["list", "watch"]
+
+- apiGroups: ["extensions"]
   resources:
   - ingresses
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - batch
+  verbs: ["list", "watch"]
+
+- apiGroups: ["batch"]
   resources:
   - jobs
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - limitranges
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - namespaces
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - nodes
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - persistentvolumeclaims
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - persistentvolumes
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - policy
+  verbs: ["list", "watch"]
+
+- apiGroups: ["policy"]
   resources:
-  - poddisruptionbudgets
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+    - poddisruptionbudgets
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - pods
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  - apps
+  verbs: ["list", "watch"]
+
+- apiGroups: ["extensions", "apps"]
   resources:
   - replicasets
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - replicationcontrollers
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - resourcequotas
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - secrets
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - ""
+  verbs: ["list", "watch"]
+
+- apiGroups: [""]
   resources:
   - services
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - apps
+  verbs: ["list", "watch"]
+
+- apiGroups: ["apps"]
   resources:
   - statefulsets
-  verbs:
-  - list
-  - watch
+  verbs: ["list", "watch"]
 
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/psp-clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
     helm.sh/chart: kube-state-metrics-2.0.0
-  name: psp-prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
+  name: psp-prometheus-grafana-alertmanater-kube-state-metrics
 rules:
-- apiGroups:
-  - extensions
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
   resourceNames:
-  - prometheus-operator-kube-state-metrics
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+  - prometheus-grafana-alertmanater-kube-state-metrics
 
 ---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/psp-clusterrole.yaml
+
+kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
 metadata:
-  labels:
+  labels:     
     app: prometheus-node-exporter
-    chart: prometheus-node-exporter-1.5.2
     heritage: Tiller
+    release: prometheus-grafana-alertmanater
+    chart: prometheus-node-exporter-1.5.2
     jobLabel: node-exporter
-    release: prometheus-operator
-  name: psp-prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
+    
+  name: psp-prometheus-grafana-alertmanater-prometheus-node-exporter
 rules:
-- apiGroups:
-  - extensions
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
   resourceNames:
-  - prometheus-operator-prometheus-node-exporter
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+  - prometheus-grafana-alertmanater-prometheus-node-exporter
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: prometheus-operator/templates/alertmanager/psp-clusterrole.yaml
+
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
-- apiGroups:
-  - extensions
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
   resourceNames:
-  - prometheus-operator-alertmanager
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+  - prometheus-grafana-alertma-alertmanager
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/clusterrole.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name:  prometheus-grafana-alertma-admission
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade,post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
-  - validatingwebhookconfigurations
-  - mutatingwebhookconfigurations
-  verbs:
-  - get
-  - update
-- apiGroups:
-  - extensions
-  resourceNames:
-  - prometheus-operator-admission
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
-
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+      - mutatingwebhookconfigurations
+    verbs:
+      - get
+      - update
+  - apiGroups: ['extensions']
+    resources: ['podsecuritypolicies']
+    verbs:     ['use']
+    resourceNames:
+    - prometheus-grafana-alertma-admission
 ---
+# Source: prometheus-operator/templates/prometheus-operator/clusterrole.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
 - apiGroups:
   - apiextensions.k8s.io
@@ -20956,37 +21023,38 @@ rules:
   - watch
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: prometheus-operator/templates/prometheus-operator/psp-clusterrole.yaml
+
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  name: prometheus-grafana-alertma-operator-psp
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator-psp
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
-- apiGroups:
-  - extensions
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
   resourceNames:
-  - prometheus-operator-operator
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+  - prometheus-grafana-alertma-operator
 
 ---
+# Source: prometheus-operator/templates/prometheus/clusterrole.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
 - apiGroups:
   - ""
@@ -20996,602 +21064,622 @@ rules:
   - get
   - list
   - watch
-- apiGroups:
-  - ""
+# This permission are not in the prometheus-operator repo
+# they're grabbed from https://github.com/prometheus/prometheus/blob/master/documentation/examples/rbac-setup.yml
+- apiGroups: [""]
   resources:
   - nodes
   - nodes/proxy
   - services
   - endpoints
   - pods
-  verbs:
-  - get
-  - list
-  - watch
+  verbs: ["get", "list", "watch"]
 - apiGroups:
   - extensions
   resources:
   - ingresses
-  verbs:
-  - get
-  - list
-  - watch
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
-
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: prometheus-operator/templates/prometheus/psp-clusterrole.yaml
+
 kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  name: prometheus-grafana-alertma-prometheus-psp
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-psp
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
-- apiGroups:
-  - extensions
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
   resourceNames:
-  - prometheus-operator-prometheus
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+  - prometheus-grafana-alertma-prometheus
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: prometheus-operator/charts/grafana/templates/clusterrolebinding.yaml
+
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  name: prometheus-grafana-alertmanater-clusterrolebinding
   labels:
     app: grafana
     chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-clusterrolebinding
-  namespace: prometheus
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: prometheus-operator-grafana-clusterrole
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-grafana
-  namespace: prometheus
-
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertmanater
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: prometheus-grafana-alertmanater-clusterrole
+  apiGroup: rbac.authorization.k8s.io
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
     helm.sh/chart: kube-state-metrics-2.0.0
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
+  name: prometheus-grafana-alertmanater-kube-state-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-kube-state-metrics
+  name: prometheus-grafana-alertmanater-kube-state-metrics
 subjects:
 - kind: ServiceAccount
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
-
+  name: prometheus-grafana-alertmanater-kube-state-metrics
+  namespace: default
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/psp-clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
     helm.sh/chart: kube-state-metrics-2.0.0
-  name: psp-prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
+  name: psp-prometheus-grafana-alertmanater-kube-state-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: psp-prometheus-operator-kube-state-metrics
+  name: psp-prometheus-grafana-alertmanater-kube-state-metrics
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertmanater-kube-state-metrics
+    namespace: default
 
 ---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/psp-clusterrolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  labels:
+  labels:     
     app: prometheus-node-exporter
-    chart: prometheus-node-exporter-1.5.2
     heritage: Tiller
+    release: prometheus-grafana-alertmanater
+    chart: prometheus-node-exporter-1.5.2
     jobLabel: node-exporter
-    release: prometheus-operator
-  name: psp-prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
+    
+  name: psp-prometheus-grafana-alertmanater-prometheus-node-exporter
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: psp-prometheus-operator-prometheus-node-exporter
+  name: psp-prometheus-grafana-alertmanater-prometheus-node-exporter
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertmanater-prometheus-node-exporter
+    namespace: default
 
 ---
+# Source: prometheus-operator/templates/alertmanager/psp-clusterrolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-alertmanager
+  name: prometheus-grafana-alertma-alertmanager
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertma-alertmanager
+    namespace: default
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/clusterrolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name:  prometheus-grafana-alertma-admission
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade,post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-admission
+  name: prometheus-grafana-alertma-admission
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-admission
-  namespace: prometheus
-
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertma-admission
+    namespace: default
 ---
+# Source: prometheus-operator/templates/prometheus-operator/clusterrolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-operator
+  name: prometheus-grafana-alertma-operator
 subjects:
 - kind: ServiceAccount
-  name: prometheus-operator-operator
-  namespace: prometheus
+  name: prometheus-grafana-alertma-operator
+  namespace: default
 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: prometheus-operator/templates/prometheus-operator/psp-clusterrolebinding.yaml
+
 kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  name: prometheus-grafana-alertma-operator-psp
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator-psp
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-operator-psp
+  name: prometheus-grafana-alertma-operator-psp
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-operator
-  namespace: prometheus
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertma-operator
+    namespace: default
 
 ---
+# Source: prometheus-operator/templates/prometheus/clusterrolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-prometheus
+  name: prometheus-grafana-alertma-prometheus
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertma-prometheus
+    namespace: default
+
 
 ---
+# Source: prometheus-operator/templates/prometheus/psp-clusterrolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name: prometheus-grafana-alertma-prometheus-psp
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-psp
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: prometheus-operator-prometheus-psp
+  name: prometheus-grafana-alertma-prometheus-psp
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertma-prometheus
+    namespace: default
+
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
+  name: prometheus-grafana-alertmanater
+  namespace: default
   labels:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
 rules:
-- apiGroups:
-  - extensions
-  resourceNames:
-  - prometheus-operator-grafana
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+- apiGroups:      ['extensions']
+  resources:      ['podsecuritypolicies']
+  verbs:          ['use']
+  resourceNames:  [prometheus-grafana-alertmanater]
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/tests/test-role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name: prometheus-grafana-alertmanater-test
   labels:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
 rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-grafana-test
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+- apiGroups:      ['policy']
+  resources:      ['podsecuritypolicies']
+  verbs:          ['use']
+  resourceNames:  [prometheus-grafana-alertmanater-test]
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/role.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  name:  prometheus-grafana-alertma-admission
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade,post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - create
-
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - create
 ---
+# Source: prometheus-operator/charts/grafana/templates/rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
+  name: prometheus-grafana-alertmanater
+  namespace: default
   labels:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: prometheus-operator-grafana
+  name: prometheus-grafana-alertmanater
 subjects:
 - kind: ServiceAccount
-  name: prometheus-operator-grafana
-  namespace: prometheus
-
+  name: prometheus-grafana-alertmanater
+  namespace: default
 ---
+# Source: prometheus-operator/charts/grafana/templates/tests/test-rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  name: prometheus-grafana-alertmanater-test
   labels:
     app: grafana
     chart: grafana-3.7.3
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
+    release: prometheus-grafana-alertmanater
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: prometheus-operator-grafana-test
+  name: prometheus-grafana-alertmanater-test
 subjects:
 - kind: ServiceAccount
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
+  name: prometheus-grafana-alertmanater-test
+  namespace: default
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/rolebinding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  name:  prometheus-grafana-alertma-admission
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade,post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: prometheus-operator-admission
+  name: prometheus-grafana-alertma-admission
 subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-admission
-  namespace: prometheus
-
+  - kind: ServiceAccount
+    name: prometheus-grafana-alertma-admission
+    namespace: default
 ---
+# Source: prometheus-operator/charts/grafana/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertmanater
+  namespace: default
   labels:
     app: grafana
     chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
 spec:
+  type: ClusterIP
   ports:
-  - name: service
-    port: 80
-    protocol: TCP
-    targetPort: 3000
+    - name: service
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+
   selector:
     app: grafana
-    release: prometheus-operator
-  type: ClusterIP
+    release: prometheus-grafana-alertmanater
 
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    prometheus.io/scrape: "true"
+  name: prometheus-grafana-alertmanater-kube-state-metrics
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
-    helm.sh/chart: kube-state-metrics-2.0.0
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    helm.sh/chart: "kube-state-metrics-2.0.0"
+    app.kubernetes.io/instance: "prometheus-grafana-alertmanater"
+    app.kubernetes.io/managed-by: "Tiller"
+  annotations:
+    prometheus.io/scrape: 'true'
 spec:
+  type: "ClusterIP"
   ports:
-  - name: http
-    port: 8080
+  - name: "http"
     protocol: TCP
+    port: 8080
     targetPort: 8080
   selector:
-    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/name: kube-state-metrics
-  type: ClusterIP
+    app.kubernetes.io/instance: prometheus-grafana-alertmanater
 
 ---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertmanater-prometheus-node-exporter
   annotations:
     prometheus.io/scrape: "true"
-  labels:
+    
+  labels:     
     app: prometheus-node-exporter
-    chart: prometheus-node-exporter-1.5.2
     heritage: Tiller
+    release: prometheus-grafana-alertmanater
+    chart: prometheus-node-exporter-1.5.2
     jobLabel: node-exporter
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
+    
 spec:
+  type: ClusterIP
   ports:
-  - name: metrics
-    port: 9100
-    protocol: TCP
-    targetPort: 9100
+    - port: 9100
+      targetPort: 9100
+      protocol: TCP
+      name: metrics
   selector:
     app: prometheus-node-exporter
-    release: prometheus-operator
-  type: ClusterIP
+    release: prometheus-grafana-alertmanater
 
 ---
+# Source: prometheus-operator/templates/alertmanager/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   ports:
-  - name: web
-    port: 9093
-    protocol: TCP
-    targetPort: 9093
+    - name: web
+      port: 9093
+      targetPort: 9093
+      protocol: TCP
   selector:
-    alertmanager: prometheus-operator-alertmanager
     app: alertmanager
-  type: ClusterIP
+    alertmanager: prometheus-grafana-alertma-alertmanager
+  type: "ClusterIP"
 
 ---
+# Source: prometheus-operator/templates/exporters/core-dns/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-coredns
   labels:
     app: prometheus-operator-coredns
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
     jobLabel: coredns
-    release: prometheus-operator
-  name: prometheus-operator-coredns
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
   namespace: kube-system
 spec:
   clusterIP: None
   ports:
-  - name: http-metrics
-    port: 9153
-    protocol: TCP
-    targetPort: 9153
+    - name: http-metrics
+      port: 9153
+      protocol: TCP
+      targetPort: 9153
   selector:
+    
     k8s-app: kube-dns
-
 ---
+# Source: prometheus-operator/templates/exporters/kube-controller-manager/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-kube-controller-manager
   labels:
     app: prometheus-operator-kube-controller-manager
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
     jobLabel: kube-controller-manager
-    release: prometheus-operator
-  name: prometheus-operator-kube-controller-manager
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
   namespace: kube-system
 spec:
   clusterIP: None
   ports:
-  - name: http-metrics
-    port: 10252
-    protocol: TCP
-    targetPort: 10252
+    - name: http-metrics
+      port: 10252
+      protocol: TCP
+      targetPort: 10252
   selector:
+    
     component: kube-controller-manager
   type: ClusterIP
-
 ---
+# Source: prometheus-operator/templates/exporters/kube-etcd/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-kube-etcd
   labels:
     app: prometheus-operator-kube-etcd
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
     jobLabel: kube-etcd
-    release: prometheus-operator
-  name: prometheus-operator-kube-etcd
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
   namespace: kube-system
 spec:
   clusterIP: None
   ports:
-  - name: http-metrics
-    port: 2379
-    protocol: TCP
-    targetPort: 2379
+    - name: http-metrics
+      port: 2379
+      protocol: TCP
+      targetPort: 2379
   selector:
+      
     component: etcd
   type: ClusterIP
-
 ---
+# Source: prometheus-operator/templates/exporters/kube-proxy/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-kube-proxy
   labels:
     app: prometheus-operator-kube-proxy
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
     jobLabel: kube-proxy
-    release: prometheus-operator
-  name: prometheus-operator-kube-proxy
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
   namespace: kube-system
 spec:
   clusterIP: None
   ports:
-  - name: http-metrics
-    port: 10249
-    protocol: TCP
-    targetPort: 10249
+    - name: http-metrics
+      port: 10249
+      protocol: TCP
+      targetPort: 10249
   selector:
+      
     k8s-app: kube-proxy
   type: ClusterIP
-
 ---
+# Source: prometheus-operator/templates/exporters/kube-scheduler/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-kube-scheduler
   labels:
     app: prometheus-operator-kube-scheduler
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
     jobLabel: kube-scheduler
-    release: prometheus-operator
-  name: prometheus-operator-kube-scheduler
+    
+    chart: prometheus-operator-6.4.1
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
   namespace: kube-system
 spec:
   clusterIP: None
   ports:
-  - name: http-metrics
-    port: 10251
-    protocol: TCP
-    targetPort: 10251
+    - name: http-metrics
+      port: 10251
+      protocol: TCP
+      targetPort: 10251
   selector:
+      
     component: kube-scheduler
   type: ClusterIP
-
 ---
+# Source: prometheus-operator/templates/prometheus-operator/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   ports:
   - name: http
@@ -21602,20 +21690,22 @@ spec:
     targetPort: https
   selector:
     app: prometheus-operator-operator
-    release: prometheus-operator
-  type: ClusterIP
+    release: "prometheus-grafana-alertmanater"
+  type: "ClusterIP"
 
 ---
+# Source: prometheus-operator/templates/prometheus/service.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   ports:
   - name: web
@@ -21623,334 +21713,383 @@ spec:
     targetPort: 9090
   selector:
     app: prometheus
-    prometheus: prometheus-operator-prometheus
-  type: ClusterIP
+    prometheus: prometheus-grafana-alertma-prometheus
+  type: "ClusterIP"
 
 ---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/daemonset.yaml
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  labels:
+  name: prometheus-grafana-alertmanater-prometheus-node-exporter
+  labels:     
     app: prometheus-node-exporter
-    chart: prometheus-node-exporter-1.5.2
     heritage: Tiller
+    release: prometheus-grafana-alertmanater
+    chart: prometheus-node-exporter-1.5.2
     jobLabel: node-exporter
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-node-exporter
-  namespace: prometheus
+    
 spec:
   selector:
     matchLabels:
       app: prometheus-node-exporter
-      release: prometheus-operator
+      release: prometheus-grafana-alertmanater
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   template:
     metadata:
-      labels:
+      labels:         
         app: prometheus-node-exporter
-        chart: prometheus-node-exporter-1.5.2
         heritage: Tiller
+        release: prometheus-grafana-alertmanater
+        chart: prometheus-node-exporter-1.5.2
         jobLabel: node-exporter
-        release: prometheus-operator
+        
     spec:
-      containers:
-      - args:
-        - --path.procfs=/host/proc
-        - --path.sysfs=/host/sys
-        - --web.listen-address=0.0.0.0:9100
-        - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
-        - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
-        image: quay.io/prometheus/node-exporter:v0.18.0
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 9100
-        name: node-exporter
-        ports:
-        - containerPort: 9100
-          name: metrics
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 9100
-        resources: {}
-        volumeMounts:
-        - mountPath: /host/proc
-          name: proc
-          readOnly: true
-        - mountPath: /host/sys
-          name: sys
-          readOnly: true
-      hostNetwork: true
-      hostPID: true
+      serviceAccountName: prometheus-grafana-alertmanater-prometheus-node-exporter
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
-      serviceAccountName: prometheus-operator-prometheus-node-exporter
+        
+      containers:
+        - name: node-exporter
+          image: "quay.io/prometheus/node-exporter:v0.18.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --path.procfs=/host/proc
+            - --path.sysfs=/host/sys
+            - --web.listen-address=0.0.0.0:9100
+            - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+            - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
+            
+          ports:
+            - name: metrics
+              containerPort: 9100
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9100
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9100
+          resources:
+            {}
+            
+          volumeMounts:
+            - name: proc
+              mountPath: /host/proc
+              readOnly:  true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+      hostNetwork: true
+      hostPID: true
       tolerations:
-      - effect: NoSchedule
-        operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+        
       volumes:
-      - hostPath:
-          path: /proc
-        name: proc
-      - hostPath:
-          path: /sys
-        name: sys
-  updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 1
-    type: RollingUpdate
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/tests/test.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  annotations:
-    helm.sh/hook: test-success
+  name: prometheus-grafana-alertmanater-test
   labels:
-    app: prometheus-operator-grafana
-    chart: grafana-3.7.3
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana-test
-  namespace: prometheus
+    app: prometheus-grafana-alertmanater
+    chart: "grafana-3.7.3"
+    heritage: "Tiller"
+    release: "prometheus-grafana-alertmanater"
+  annotations:
+    "helm.sh/hook": test-success
 spec:
-  containers:
-  - command:
-    - /tools/bats/bats
-    - -t
-    - /tests/run.sh
-    image: dduportal/bats:0.4.0
-    name: prometheus-operator-test
-    volumeMounts:
-    - mountPath: /tests
-      name: tests
-      readOnly: true
-    - mountPath: /tools
-      name: tools
+  serviceAccountName: prometheus-grafana-alertmanater-test
   initContainers:
-  - command:
-    - bash
-    - -c
-    - |
-      set -ex
-      # copy bats to tools dir
-      cp -R /usr/local/libexec/ /tools/bats/
-    image: dduportal/bats:0.4.0
-    name: test-framework
-    volumeMounts:
-    - mountPath: /tools
-      name: tools
-  restartPolicy: Never
-  serviceAccountName: prometheus-operator-grafana-test
+    - name: test-framework
+      image: "dduportal/bats:0.4.0"
+      command:
+      - "bash"
+      - "-c"
+      - |
+        set -ex
+        # copy bats to tools dir
+        cp -R /usr/local/libexec/ /tools/bats/
+      volumeMounts:
+      - mountPath: /tools
+        name: tools
+  containers:
+    - name: prometheus-grafana-alertmanater-test
+      image: "dduportal/bats:0.4.0"
+      command: ["/tools/bats/bats", "-t", "/tests/run.sh"]
+      volumeMounts:
+        - mountPath: /tests
+          name: tests
+          readOnly: true
+        - mountPath: /tools
+          name: tools
   volumes:
-  - configMap:
-      name: prometheus-operator-grafana-test
-    name: tests
-  - emptyDir: {}
-    name: tools
+  - name: tests
+    configMap:
+      name: prometheus-grafana-alertmanater-test
+  - name: tools
+    emptyDir: {}
+  restartPolicy: Never
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/deployment.yaml
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
+  name: prometheus-grafana-alertmanater
+  namespace: default
   labels:
     app: grafana
     chart: grafana-3.7.3
+    release: prometheus-grafana-alertmanater
     heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: grafana
-      release: prometheus-operator
+      release: prometheus-grafana-alertmanater
   strategy:
     type: RollingUpdate
   template:
     metadata:
-      annotations:
-        checksum/config: 0edf40eda042d75fe857ee03383c94ecf8e09ac9a32fdbdccdb50c2ff836ca62
-        checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: da7611be9ee4c1de2960d65151e7d72f20d403db4b5c6df90fd45590be824d58
-        checksum/secret: 3e105c2d0ca7d67e3354014446c6a61ac7fc190166af8dc467c84bf24efd301f
       labels:
         app: grafana
-        release: prometheus-operator
+        release: prometheus-grafana-alertmanater
+      annotations:
+        checksum/config: 9de775e92d645cc8865463ad45573a6a35e72c5de5eb6c6ba2bf521494e65eee
+        checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/sc-dashboard-provider-config: aac6a014079ba4092a81e6bd6d9fe06119f4452f35c08426bf7984dfd56c9470
+        checksum/secret: 28184ef8a108a0ef8c0235f2bdedc79c137e6e5f08a125497b9b04ec89c9d4e9
     spec:
-      containers:
-      - env:
-        - name: LABEL
-          value: grafana_dashboard
-        - name: FOLDER
-          value: /tmp/dashboards
-        - name: RESOURCE
-          value: both
-        image: kiwigrid/k8s-sidecar:0.0.18
-        imagePullPolicy: IfNotPresent
-        name: grafana-sc-dashboard
-        resources: {}
-        volumeMounts:
-        - mountPath: /tmp/dashboards
-          name: sc-dashboard-volume
-      - env:
-        - name: GF_SECURITY_ADMIN_USER
-          valueFrom:
-            secretKeyRef:
-              key: admin-user
-              name: prometheus-operator-grafana
-        - name: GF_SECURITY_ADMIN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              key: admin-password
-              name: prometheus-operator-grafana
-        image: grafana/grafana:6.2.5
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 10
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 60
-          timeoutSeconds: 30
-        name: grafana
-        ports:
-        - containerPort: 80
-          name: service
-          protocol: TCP
-        - containerPort: 3000
-          name: grafana
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/grafana/grafana.ini
-          name: config
-          subPath: grafana.ini
-        - mountPath: /etc/grafana/ldap.toml
-          name: ldap
-          subPath: ldap.toml
-        - mountPath: /var/lib/grafana
-          name: storage
-        - mountPath: /tmp/dashboards
-          name: sc-dashboard-volume
-        - mountPath: /etc/grafana/provisioning/dashboards/sc-dashboardproviders.yaml
-          name: sc-dashboard-provider
-          subPath: provider.yaml
-        - mountPath: /etc/grafana/provisioning/datasources
-          name: sc-datasources-volume
-      initContainers:
-      - command:
-        - chown
-        - -R
-        - 472:472
-        - /var/lib/grafana
-        image: busybox:1.30
-        imagePullPolicy: IfNotPresent
-        name: init-chown-data
-        resources: {}
-        securityContext:
-          runAsUser: 0
-        volumeMounts:
-        - mountPath: /var/lib/grafana
-          name: storage
-      - env:
-        - name: METHOD
-          value: LIST
-        - name: LABEL
-          value: grafana_datasource
-        - name: FOLDER
-          value: /etc/grafana/provisioning/datasources
-        - name: RESOURCE
-          value: both
-        image: kiwigrid/k8s-sidecar:0.0.18
-        imagePullPolicy: IfNotPresent
-        name: grafana-sc-datasources
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/grafana/provisioning/datasources
-          name: sc-datasources-volume
+      serviceAccountName: prometheus-grafana-alertmanater
       securityContext:
         fsGroup: 472
         runAsUser: 472
-      serviceAccountName: prometheus-operator-grafana
+        
+      initContainers:
+        - name: grafana-sc-datasources
+          image: "kiwigrid/k8s-sidecar:0.0.18"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: METHOD
+              value: LIST
+            - name: LABEL
+              value: "grafana_datasource"
+            - name: FOLDER
+              value: "/etc/grafana/provisioning/datasources"
+            - name: RESOURCE
+              value: "both"
+          resources:
+            {}
+            
+          volumeMounts:
+            - name: sc-datasources-volume
+              mountPath: "/etc/grafana/provisioning/datasources"
+      containers:
+        - name: grafana-sc-dashboard
+          image: "kiwigrid/k8s-sidecar:0.0.18"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LABEL
+              value: "grafana_dashboard"
+            - name: FOLDER
+              value: "/tmp/dashboards"
+            - name: RESOURCE
+              value: "both"
+          resources:
+            {}
+            
+          volumeMounts:
+            - name: sc-dashboard-volume
+              mountPath: "/tmp/dashboards"
+        - name: grafana
+          image: "grafana/grafana:6.2.5"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/grafana/grafana.ini"
+              subPath: grafana.ini
+            - name: ldap
+              mountPath: "/etc/grafana/ldap.toml"
+              subPath: ldap.toml
+            - name: storage
+              mountPath: "/var/lib/grafana"
+            - name: sc-dashboard-volume
+              mountPath: "/tmp/dashboards"
+            - name: sc-dashboard-provider
+              mountPath: "/etc/grafana/provisioning/dashboards/sc-dashboardproviders.yaml"
+              subPath: provider.yaml
+            - name: sc-datasources-volume
+              mountPath: "/etc/grafana/provisioning/datasources"
+          ports:
+            - name: service
+              containerPort: 80
+              protocol: TCP
+            - name: grafana
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-grafana-alertmanater
+                  key: admin-user
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: prometheus-grafana-alertmanater
+                  key: admin-password
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 60
+            timeoutSeconds: 30
+            
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            
+          resources:
+            {}
+            
       volumes:
-      - configMap:
-          name: prometheus-operator-grafana
-        name: config
-      - name: ldap
-        secret:
-          items:
-          - key: ldap-toml
-            path: ldap.toml
-          secretName: prometheus-operator-grafana
-      - name: storage
-        persistentVolumeClaim:
-          claimName: prometheus-operator-grafana
-      - emptyDir: {}
-        name: sc-dashboard-volume
-      - configMap:
-          name: prometheus-operator-grafana-config-dashboards
-        name: sc-dashboard-provider
-      - emptyDir: {}
-        name: sc-datasources-volume
+        - name: config
+          configMap:
+            name: prometheus-grafana-alertmanater
+        - name: ldap
+          secret:
+            secretName: prometheus-grafana-alertmanater
+            items:
+              - key: ldap-toml
+                path: ldap.toml
+        - name: storage
+          emptyDir: {}
+        - name: sc-dashboard-volume
+          emptyDir: {}
+        - name: sc-dashboard-provider
+          configMap:
+            name: prometheus-grafana-alertmanater-config-dashboards
+        - name: sc-datasources-volume
+          emptyDir: {}
 
 ---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: prometheus-grafana-alertmanater-kube-state-metrics
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: Tiller
     app.kubernetes.io/name: kube-state-metrics
-    helm.sh/chart: kube-state-metrics-2.0.0
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    helm.sh/chart: "kube-state-metrics-2.0.0"
+    app.kubernetes.io/instance: "prometheus-grafana-alertmanater"
+    app.kubernetes.io/managed-by: "Tiller"
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: kube-state-metrics
+  replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: kube-state-metrics
+        app.kubernetes.io/instance: "prometheus-grafana-alertmanater"
     spec:
+      hostNetwork: false
+      serviceAccountName: prometheus-grafana-alertmanater-kube-state-metrics
+      securityContext:
+        fsGroup: 65534
+        runAsUser: 65534
       containers:
-      - args:
+      - name: kube-state-metrics
+        args:
+
         - --collectors=certificatesigningrequests
+
+
         - --collectors=configmaps
+
+
         - --collectors=cronjobs
+
+
         - --collectors=daemonsets
+
+
         - --collectors=deployments
+
+
         - --collectors=endpoints
+
+
         - --collectors=horizontalpodautoscalers
+
+
         - --collectors=ingresses
+
+
         - --collectors=jobs
+
+
         - --collectors=limitranges
+
+
         - --collectors=namespaces
+
+
         - --collectors=nodes
+
+
         - --collectors=persistentvolumeclaims
+
+
         - --collectors=persistentvolumes
+
+
         - --collectors=poddisruptionbudgets
+
+
         - --collectors=pods
+
+
         - --collectors=replicasets
+
+
         - --collectors=replicationcontrollers
+
+
         - --collectors=resourcequotas
+
+
         - --collectors=secrets
+
+
         - --collectors=services
+
+
         - --collectors=statefulsets
-        image: quay.io/coreos/kube-state-metrics:v1.6.0
+
+
         imagePullPolicy: IfNotPresent
-        name: kube-state-metrics
+        image: "quay.io/coreos/kube-state-metrics:v1.6.0"
         ports:
         - containerPort: 8080
         readinessProbe:
@@ -21959,400 +22098,310 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           timeoutSeconds: 5
-        resources: null
-      hostNetwork: false
-      securityContext:
-        fsGroup: 65534
-        runAsUser: 65534
-      serviceAccountName: prometheus-operator-kube-state-metrics
+        resources:
+            null
+            
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/deployment.yaml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: prometheus-operator-operator
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
   template:
     metadata:
       labels:
         app: prometheus-operator-operator
+        
         chart: prometheus-operator-6.4.1
-        heritage: Tiller
-        release: prometheus-operator
+        release: "prometheus-grafana-alertmanater"
+        heritage: "Tiller"
     spec:
       containers:
-      - args:
-        - --kubelet-service=kube-system/prometheus-operator-kubelet
-        - --logtostderr=true
-        - --crd-apigroup=monitoring.coreos.com
-        - --localhost=127.0.0.1
-        - --prometheus-config-reloader=quay.io/coreos/prometheus-config-reloader:v0.31.1
-        - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
-        image: quay.io/coreos/prometheus-operator:v0.31.1
-        imagePullPolicy: IfNotPresent
-        name: prometheus-operator
-        ports:
-        - containerPort: 8080
-          name: http
-        resources: {}
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-      - args:
-        - server
-        - --listen=:8443
-        - --target=127.0.0.1:8080
-        - --key=cert/key
-        - --cert=cert/cert
-        - --disable-authentication
-        image: squareup/ghostunnel:v1.4.1
-        imagePullPolicy: IfNotPresent
-        name: tls-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-        volumeMounts:
-        - mountPath: /cert
-          name: tls-proxy-secret
-          readOnly: true
+        - name: prometheus-operator
+          image: "quay.io/coreos/prometheus-operator:v0.31.1"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --kubelet-service=kube-system/prometheus-grafana-alertma-kubelet
+            - --logtostderr=true
+            - --crd-apigroup=monitoring.coreos.com
+            - --localhost=127.0.0.1
+            - --prometheus-config-reloader=quay.io/coreos/prometheus-config-reloader:v0.31.1
+            - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            {}
+            
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+        - name: tls-proxy
+          image: squareup/ghostunnel:v1.4.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - server
+            - --listen=:8443
+            - --target=127.0.0.1:8080
+            - --key=cert/key
+            - --cert=cert/cert
+            - --disable-authentication
+          volumeMounts:
+          - name: tls-proxy-secret
+            mountPath: /cert
+            readOnly: true
+          ports:
+            - containerPort: 8443
+              name: https
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+      volumes:
+        - name: tls-proxy-secret
+          secret:
+            defaultMode: 420
+            secretName: prometheus-grafana-alertma-admission
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
-      serviceAccountName: prometheus-operator-operator
-      volumes:
-      - name: tls-proxy-secret
-        secret:
-          defaultMode: 420
-          secretName: prometheus-operator-admission
+        
+      serviceAccountName: prometheus-grafana-alertma-operator
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/job-createSecret.yaml
+
 apiVersion: batch/v1
 kind: Job
 metadata:
+  name:  prometheus-grafana-alertma-admission-create
   annotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission-create
+    app: prometheus-operator-admission-create    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission-create
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
+  ttlSecondsAfterFinished: 0
   template:
     metadata:
+      name:  prometheus-grafana-alertma-admission-create
       labels:
-        app: prometheus-operator-admission-create
+        app: prometheus-operator-admission-create        
         chart: prometheus-operator-6.4.1
-        heritage: Tiller
-        release: prometheus-operator
-      name: prometheus-operator-admission-create
+        release: "prometheus-grafana-alertmanater"
+        heritage: "Tiller"
     spec:
       containers:
-      - args:
-        - create
-        - --host=prometheus-operator-operator,prometheus-operator-operator.prometheus.svc
-        - --namespace=prometheus
-        - --secret-name=prometheus-operator-admission
-        image: jettech/kube-webhook-certgen:v1.0.0
-        imagePullPolicy: null
-        name: create
+        - name: create
+          image: jettech/kube-webhook-certgen:v1.0.0
+          imagePullPolicy: 
+          args:
+            - create
+            - --host=prometheus-grafana-alertma-operator,prometheus-grafana-alertma-operator.default.svc
+            - --namespace=default
+            - --secret-name=prometheus-grafana-alertma-admission
       restartPolicy: OnFailure
+      serviceAccountName: prometheus-grafana-alertma-admission
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000
-      serviceAccountName: prometheus-operator-admission
-  ttlSecondsAfterFinished: 0
-
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/job-patch/job-patchWebhook.yaml
+
 apiVersion: batch/v1
 kind: Job
 metadata:
+  name:  prometheus-grafana-alertma-admission-patch
   annotations:
-    helm.sh/hook: post-install,post-upgrade
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
-    app: prometheus-operator-admission-patch
+    app: prometheus-operator-admission-patch    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission-patch
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
+  ttlSecondsAfterFinished: 0
   template:
     metadata:
+      name:  prometheus-grafana-alertma-admission-patch
       labels:
-        app: prometheus-operator-admission-patch
+        app: prometheus-operator-admission-patch        
         chart: prometheus-operator-6.4.1
-        heritage: Tiller
-        release: prometheus-operator
-      name: prometheus-operator-admission-patch
+        release: "prometheus-grafana-alertmanater"
+        heritage: "Tiller"
     spec:
       containers:
-      - args:
-        - patch
-        - --webhook-name=prometheus-operator-admission
-        - --namespace=prometheus
-        - --secret-name=prometheus-operator-admission
-        - --patch-failure-policy=Fail
-        image: jettech/kube-webhook-certgen:v1.0.0
-        imagePullPolicy: null
-        name: patch
+        - name: patch
+          image: jettech/kube-webhook-certgen:v1.0.0
+          imagePullPolicy: 
+          args:
+            - patch
+            - --webhook-name=prometheus-grafana-alertma-admission
+            - --namespace=default
+            - --secret-name=prometheus-grafana-alertma-admission
+            - --patch-failure-policy=Fail
       restartPolicy: OnFailure
+      serviceAccountName: prometheus-grafana-alertma-admission
       securityContext:
         runAsNonRoot: true
         runAsUser: 2000
-      serviceAccountName: prometheus-operator-admission
-  ttlSecondsAfterFinished: 0
-
 ---
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-  labels:
-    app: grafana
-    chart: grafana-3.7.3
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
-spec:
-  rules:
-  - host: grafana-space-westus2.xiaodong.cloud
-    http:
-      paths:
-      - backend:
-          serviceName: prometheus-operator-grafana
-          servicePort: 80
-        path: /
-  tls:
-  - hosts:
-    - grafana-space-westus2.xiaodong.cloud
-    secretName: sslcert-dev-xiaodong-cloud
+# Source: prometheus-operator/templates/alertmanager/alertmanager.yaml
 
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-  labels:
-    app: prometheus-operator-alertmanager
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
-spec:
-  rules:
-  - host: alertmanager-space-westus2.xiaodong.cloud
-    http:
-      paths:
-      - backend:
-          serviceName: prometheus-operator-alertmanager
-          servicePort: 9093
-        path: /
-  tls:
-  - hosts:
-    - alertmanager-space-westus2.xiaodong.cloud
-    secretName: sslcert-dev-xiaodong-cloud
-
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-  labels:
-    app: prometheus-operator-prometheus
-    chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
-spec:
-  rules:
-  - host: prometheus-space-westus2.xiaodong.cloud
-    http:
-      paths:
-      - backend:
-          serviceName: prometheus-operator-prometheus
-          servicePort: 9090
-        path: /
-  tls:
-  - hosts:
-    - prometheus-space-westus2.xiaodong.cloud
-    secretName: sslcert-dev-xiaodong-cloud
-
----
 apiVersion: monitoring.coreos.com/v1
 kind: Alertmanager
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   baseImage: quay.io/prometheus/alertmanager
-  externalUrl: http://alertmanager-space-westus2.xiaodong.cloud/
-  listenLocal: false
-  logFormat: logfmt
-  logLevel: debug
-  paused: false
+  version: v0.17.0
   replicas: 1
-  retention: 120h
-  routePrefix: /
+  listenLocal: false
+  serviceAccountName: prometheus-grafana-alertma-alertmanager
+  externalUrl: http://prometheus-grafana-alertma-alertmanager.default:9093
+  paused: false
+  logFormat: "logfmt"
+  logLevel:  "info"
+  retention: "120h"
+  routePrefix: "/"
   securityContext:
     fsGroup: 2000
     runAsNonRoot: true
     runAsUser: 1000
-  serviceAccountName: prometheus-operator-alertmanager
-  storage:
-    volumeClaimTemplate:
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
-  version: v0.17.0
+    
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/mutatingWebhookConfiguration.yaml
+
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
+  name:  prometheus-grafana-alertma-admission
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 webhooks:
-- clientConfig:
-    service:
-      name: prometheus-operator-operator
-      namespace: prometheus
-      path: /admission-prometheusrules/mutate
-  failurePolicy: Ignore
-  name: prometheusrulemutate.monitoring.coreos.com
-  rules:
-  - apiGroups:
-    - monitoring.coreos.com
-    apiVersions:
-    - '*'
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - prometheusrules
-
+  - name: prometheusrulemutate.monitoring.coreos.com
+    failurePolicy: Ignore
+    rules:
+      - apiGroups:
+          - monitoring.coreos.com
+        apiVersions:
+          - "*"
+        resources:
+          - prometheusrules
+        operations:
+          - CREATE
+          - UPDATE
+    clientConfig:
+      service:
+        namespace: default
+        name: prometheus-grafana-alertma-operator
+        path: /admission-prometheusrules/mutate
 ---
+# Source: prometheus-operator/templates/prometheus/prometheus.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   alerting:
     alertmanagers:
-    - name: prometheus-operator-alertmanager
-      namespace: prometheus
-      pathPrefix: /
-      port: web
+      - namespace: default
+        name: prometheus-grafana-alertma-alertmanager
+        port: web
+        pathPrefix: "/"
   baseImage: quay.io/prometheus/prometheus
-  enableAdminAPI: false
-  externalUrl: http://prometheus-space-westus2.xiaodong.cloud/
-  listenLocal: false
-  logFormat: logfmt
-  logLevel: info
+  version: v2.10.0
+  externalUrl: http://prometheus-grafana-alertma-prometheus.default:9090
   paused: false
   replicas: 1
-  retention: 10d
-  routePrefix: /
+  logLevel:  info
+  logFormat:  logfmt
+  listenLocal: false
+  enableAdminAPI: false
+  retention: "10d"
+  routePrefix: "/"
+  serviceAccountName: prometheus-grafana-alertma-prometheus
+  serviceMonitorSelector:
+    matchLabels:
+      release: "prometheus-grafana-alertmanater"
+
+  serviceMonitorNamespaceSelector: {}
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+    
   ruleNamespaceSelector: {}
   ruleSelector:
     matchLabels:
       app: prometheus-operator
-      release: prometheus-operator
-  securityContext:
-    fsGroup: 2000
-    runAsNonRoot: true
-    runAsUser: 1000
-  serviceAccountName: prometheus-operator-prometheus
-  serviceMonitorNamespaceSelector: {}
-  serviceMonitorSelector:
-    matchLabels:
-      release: prometheus-operator
-  storage:
-    volumeClaimTemplate:
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
-  version: v2.10.0
+      release: "prometheus-grafana-alertmanater"
+
 
 ---
+# Source: prometheus-operator/templates/prometheus/rules/alertmanager.rules.yaml
+# Generated from 'alertmanager.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-alertmanager.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: alertmanager.rules
     rules:
     - alert: AlertmanagerConfigInconsistent
       annotations:
-        message: The configuration of the instances of the Alertmanager cluster `{{$labels.service}}`
-          are out of sync.
-      expr: count_values("config_hash", alertmanager_config_hash{job="prometheus-operator-alertmanager",namespace="prometheus"})
-        BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-operator-operator",namespace="prometheus",controller="alertmanager"},
-        "service", "$1", "name", "(.*)") != 1
+        message: The configuration of the instances of the Alertmanager cluster `{{$labels.service}}` are out of sync.
+      expr: count_values("config_hash", alertmanager_config_hash{job="prometheus-grafana-alertma-alertmanager",namespace="default"}) BY (service) / ON(service) GROUP_LEFT() label_replace(prometheus_operator_spec_replicas{job="prometheus-grafana-alertma-operator",namespace="default",controller="alertmanager"}, "service", "$1", "name", "(.*)") != 1
       for: 5m
       labels:
         severity: critical
     - alert: AlertmanagerFailedReload
       annotations:
-        message: Reloading Alertmanager's configuration has failed for {{ $labels.namespace
-          }}/{{ $labels.pod}}.
-      expr: alertmanager_config_last_reload_successful{job="prometheus-operator-alertmanager",namespace="prometheus"}
-        == 0
+        message: Reloading Alertmanager's configuration has failed for {{ $labels.namespace }}/{{ $labels.pod}}.
+      expr: alertmanager_config_last_reload_successful{job="prometheus-grafana-alertma-alertmanager",namespace="default"} == 0
       for: 10m
       labels:
         severity: warning
@@ -22360,57 +22409,55 @@ spec:
       annotations:
         message: Alertmanager has not found all other members of the cluster.
       expr: |-
-        alertmanager_cluster_members{job="prometheus-operator-alertmanager",namespace="prometheus"}
+        alertmanager_cluster_members{job="prometheus-grafana-alertma-alertmanager",namespace="default"}
           != on (service) GROUP_LEFT()
-        count by (service) (alertmanager_cluster_members{job="prometheus-operator-alertmanager",namespace="prometheus"})
+        count by (service) (alertmanager_cluster_members{job="prometheus-grafana-alertma-alertmanager",namespace="default"})
       for: 5m
       labels:
         severity: critical
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/etcd.yaml
+# Generated from 'etcd' group from https://raw.githubusercontent.com/etcd-io/etcd/master/Documentation/op-guide/etcd3_alert.rules.yml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-etcd
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-etcd
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: etcd
     rules:
     - alert: etcdInsufficientMembers
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": insufficient members ({{ $value
-          }}).'
-      expr: sum(up{job=~".*etcd.*"} == bool 1) by (job) < ((count(up{job=~".*etcd.*"})
-        by (job) + 1) / 2)
+        message: 'etcd cluster "{{ $labels.job }}": insufficient members ({{ $value }}).'
+      expr: sum(up{job=~".*etcd.*"} == bool 1) by (job) < ((count(up{job=~".*etcd.*"}) by (job) + 1) / 2)
       for: 3m
       labels:
         severity: critical
     - alert: etcdNoLeader
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": member {{ $labels.instance }}
-          has no leader.'
+        message: 'etcd cluster "{{ $labels.job }}": member {{ $labels.instance }} has no leader.'
       expr: etcd_server_has_leader{job=~".*etcd.*"} == 0
       for: 1m
       labels:
         severity: critical
     - alert: etcdHighNumberOfLeaderChanges
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": instance {{ $labels.instance }}
-          has seen {{ $value }} leader changes within the last hour.'
+        message: 'etcd cluster "{{ $labels.job }}": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour.'
       expr: rate(etcd_server_leader_changes_seen_total{job=~".*etcd.*"}[15m]) > 3
       for: 15m
       labels:
         severity: warning
     - alert: etcdHighNumberOfFailedGRPCRequests
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": {{ $value }}% of requests for
-          {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.'
       expr: |-
         100 * sum(rate(grpc_server_handled_total{job=~".*etcd.*", grpc_code!="OK"}[5m])) BY (job, instance, grpc_service, grpc_method)
           /
@@ -22421,8 +22468,7 @@ spec:
         severity: warning
     - alert: etcdHighNumberOfFailedGRPCRequests
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": {{ $value }}% of requests for
-          {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.'
       expr: |-
         100 * sum(rate(grpc_server_handled_total{job=~".*etcd.*", grpc_code!="OK"}[5m])) BY (job, instance, grpc_service, grpc_method)
           /
@@ -22433,8 +22479,7 @@ spec:
         severity: critical
     - alert: etcdGRPCRequestsSlow
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": gRPC requests to {{ $labels.grpc_method
-          }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}.'
       expr: |-
         histogram_quantile(0.99, sum(rate(grpc_server_handling_seconds_bucket{job=~".*etcd.*", grpc_type="unary"}[5m])) by (job, instance, grpc_service, grpc_method, le))
         > 0.15
@@ -22443,8 +22488,7 @@ spec:
         severity: critical
     - alert: etcdMemberCommunicationSlow
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": member communication with {{ $labels.To
-          }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}.'
       expr: |-
         histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{job=~".*etcd.*"}[5m]))
         > 0.15
@@ -22453,16 +22497,14 @@ spec:
         severity: warning
     - alert: etcdHighNumberOfFailedProposals
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": {{ $value }} proposal failures
-          within the last hour on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}.'
       expr: rate(etcd_server_proposals_failed_total{job=~".*etcd.*"}[15m]) > 5
       for: 15m
       labels:
         severity: warning
     - alert: etcdHighFsyncDurations
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": 99th percentile fync durations
-          are {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}.'
       expr: |-
         histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~".*etcd.*"}[5m]))
         > 0.5
@@ -22471,8 +22513,7 @@ spec:
         severity: warning
     - alert: etcdHighCommitDurations
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": 99th percentile commit durations
-          {{ $value }}s on etcd instance {{ $labels.instance }}.'
+        message: 'etcd cluster "{{ $labels.job }}": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}.'
       expr: |-
         histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~".*etcd.*"}[5m]))
         > 0.25
@@ -22481,8 +22522,7 @@ spec:
         severity: warning
     - alert: etcdHighNumberOfFailedHTTPRequests
       annotations:
-        message: '{{ $value }}% of requests for {{ $labels.method }} failed on etcd
-          instance {{ $labels.instance }}'
+        message: '{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}'
       expr: |-
         sum(rate(etcd_http_failed_total{job=~".*etcd.*", code!="404"}[5m])) BY (method) / sum(rate(etcd_http_received_total{job=~".*etcd.*"}[5m]))
         BY (method) > 0.01
@@ -22491,8 +22531,7 @@ spec:
         severity: warning
     - alert: etcdHighNumberOfFailedHTTPRequests
       annotations:
-        message: '{{ $value }}% of requests for {{ $labels.method }} failed on etcd
-          instance {{ $labels.instance }}.'
+        message: '{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.'
       expr: |-
         sum(rate(etcd_http_failed_total{job=~".*etcd.*", code!="404"}[5m])) BY (method) / sum(rate(etcd_http_received_total{job=~".*etcd.*"}[5m]))
         BY (method) > 0.05
@@ -22501,26 +22540,28 @@ spec:
         severity: critical
     - alert: etcdHTTPRequestsSlow
       annotations:
-        message: etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method
-          }} are slow.
+        message: etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method }} are slow.
       expr: |-
         histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[5m]))
         > 0.15
       for: 10m
       labels:
         severity: warning
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/general.rules.yaml
+# Generated from 'general.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-general.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-general.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: general.rules
@@ -22534,41 +22575,47 @@ spec:
         severity: warning
     - alert: Watchdog
       annotations:
-        message: |
-          This is an alert meant to ensure that the entire alerting pipeline is functional.
+        message: 'This is an alert meant to ensure that the entire alerting pipeline is functional.
+
           This alert is always firing, therefore it should always be firing in Alertmanager
+
           and always fire against a receiver. There are integrations with various notification
+
           mechanisms that send a notification when this alert is not firing. For example the
+
           "DeadMansSnitch" integration in PagerDuty.
+
+          '
       expr: vector(1)
       labels:
         severity: none
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/k8s.rules.yaml
+# Generated from 'k8s.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-k8s.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-k8s.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: k8s.rules
     rules:
-    - expr: sum(rate(container_cpu_usage_seconds_total{job="kubelet", image!="", container_name!=""}[5m]))
-        by (namespace)
+    - expr: sum(rate(container_cpu_usage_seconds_total{job="kubelet", image!="", container_name!=""}[5m])) by (namespace)
       record: namespace:container_cpu_usage_seconds_total:sum_rate
     - expr: |-
         sum by (namespace, pod_name, container_name) (
           rate(container_cpu_usage_seconds_total{job="kubelet", image!="", container_name!=""}[5m])
         )
       record: namespace_pod_name_container_name:container_cpu_usage_seconds_total:sum_rate
-    - expr: sum(container_memory_usage_bytes{job="kubelet", image!="", container_name!=""})
-        by (namespace)
+    - expr: sum(container_memory_usage_bytes{job="kubelet", image!="", container_name!=""}) by (namespace)
       record: namespace:container_memory_usage_bytes:sum
     - expr: |-
         sum by (namespace, label_name) (
@@ -22631,179 +22678,173 @@ spec:
       labels:
         workload_type: statefulset
       record: mixin_pod_workload
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kube-apiserver.rules.yaml
+# Generated from 'kube-apiserver.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kube-apiserver.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-apiserver.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kube-apiserver.rules
     rules:
-    - expr: histogram_quantile(0.99, sum(rate(apiserver_request_latencies_bucket{job="apiserver"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.99, sum(rate(apiserver_request_latencies_bucket{job="apiserver"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.99"
+        quantile: '0.99'
       record: cluster_quantile:apiserver_request_latencies:histogram_quantile
-    - expr: histogram_quantile(0.9, sum(rate(apiserver_request_latencies_bucket{job="apiserver"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.9, sum(rate(apiserver_request_latencies_bucket{job="apiserver"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.9"
+        quantile: '0.9'
       record: cluster_quantile:apiserver_request_latencies:histogram_quantile
-    - expr: histogram_quantile(0.5, sum(rate(apiserver_request_latencies_bucket{job="apiserver"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.5, sum(rate(apiserver_request_latencies_bucket{job="apiserver"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.5"
+        quantile: '0.5'
       record: cluster_quantile:apiserver_request_latencies:histogram_quantile
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kube-prometheus-node-alerting.rules.yaml
+# Generated from 'kube-prometheus-node-alerting.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kube-prometheus-node-alerting.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-prometheus-node-alerting.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kube-prometheus-node-alerting.rules
     rules:
     - alert: NodeDiskRunningFull
       annotations:
-        message: Device {{ $labels.device }} of node-exporter {{ $labels.namespace
-          }}/{{ $labels.pod }} will be full within the next 24 hours.
-      expr: '(node:node_filesystem_usage: > 0.85) and (predict_linear(node:node_filesystem_avail:[6h],
-        3600 * 24) < 0)'
+        message: Device {{ $labels.device }} of node-exporter {{ $labels.namespace }}/{{ $labels.pod }} will be full within the next 24 hours.
+      expr: '(node:node_filesystem_usage: > 0.85) and (predict_linear(node:node_filesystem_avail:[6h], 3600 * 24) < 0)'
       for: 30m
       labels:
         severity: warning
     - alert: NodeDiskRunningFull
       annotations:
-        message: Device {{ $labels.device }} of node-exporter {{ $labels.namespace
-          }}/{{ $labels.pod }} will be full within the next 2 hours.
-      expr: '(node:node_filesystem_usage: > 0.85) and (predict_linear(node:node_filesystem_avail:[30m],
-        3600 * 2) < 0)'
+        message: Device {{ $labels.device }} of node-exporter {{ $labels.namespace }}/{{ $labels.pod }} will be full within the next 2 hours.
+      expr: '(node:node_filesystem_usage: > 0.85) and (predict_linear(node:node_filesystem_avail:[30m], 3600 * 2) < 0)'
       for: 10m
       labels:
         severity: critical
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kube-prometheus-node-recording.rules.yaml
+# Generated from 'kube-prometheus-node-recording.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kube-prometheus-node-recording.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-prometheus-node-recording.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kube-prometheus-node-recording.rules
     rules:
-    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[3m])) BY
-        (instance)
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[3m])) BY (instance)
       record: instance:node_cpu:rate:sum
-    - expr: sum((node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}))
-        BY (instance)
+    - expr: sum((node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"})) BY (instance)
       record: instance:node_filesystem_usage:sum
     - expr: sum(rate(node_network_receive_bytes_total[3m])) BY (instance)
       record: instance:node_network_receive_bytes:rate:sum
     - expr: sum(rate(node_network_transmit_bytes_total[3m])) BY (instance)
       record: instance:node_network_transmit_bytes:rate:sum
-    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m])) WITHOUT
-        (cpu, mode) / ON(instance) GROUP_LEFT() count(sum(node_cpu_seconds_total)
-        BY (instance, cpu)) BY (instance)
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m])) WITHOUT (cpu, mode) / ON(instance) GROUP_LEFT() count(sum(node_cpu_seconds_total) BY (instance, cpu)) BY (instance)
       record: instance:node_cpu:ratio
     - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m]))
       record: cluster:node_cpu:sum_rate5m
-    - expr: cluster:node_cpu_seconds_total:rate5m / count(sum(node_cpu_seconds_total)
-        BY (instance, cpu))
+    - expr: cluster:node_cpu_seconds_total:rate5m / count(sum(node_cpu_seconds_total) BY (instance, cpu))
       record: cluster:node_cpu:ratio
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kube-scheduler.rules.yaml
+# Generated from 'kube-scheduler.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kube-scheduler.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-scheduler.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kube-scheduler.rules
     rules:
-    - expr: histogram_quantile(0.99, sum(rate(scheduler_e2e_scheduling_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.99, sum(rate(scheduler_e2e_scheduling_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.99"
+        quantile: '0.99'
       record: cluster_quantile:scheduler_e2e_scheduling_latency:histogram_quantile
-    - expr: histogram_quantile(0.99, sum(rate(scheduler_scheduling_algorithm_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.99, sum(rate(scheduler_scheduling_algorithm_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.99"
+        quantile: '0.99'
       record: cluster_quantile:scheduler_scheduling_algorithm_latency:histogram_quantile
-    - expr: histogram_quantile(0.99, sum(rate(scheduler_binding_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.99, sum(rate(scheduler_binding_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.99"
+        quantile: '0.99'
       record: cluster_quantile:scheduler_binding_latency:histogram_quantile
-    - expr: histogram_quantile(0.9, sum(rate(scheduler_e2e_scheduling_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.9, sum(rate(scheduler_e2e_scheduling_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.9"
+        quantile: '0.9'
       record: cluster_quantile:scheduler_e2e_scheduling_latency:histogram_quantile
-    - expr: histogram_quantile(0.9, sum(rate(scheduler_scheduling_algorithm_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.9, sum(rate(scheduler_scheduling_algorithm_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.9"
+        quantile: '0.9'
       record: cluster_quantile:scheduler_scheduling_algorithm_latency:histogram_quantile
-    - expr: histogram_quantile(0.9, sum(rate(scheduler_binding_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.9, sum(rate(scheduler_binding_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.9"
+        quantile: '0.9'
       record: cluster_quantile:scheduler_binding_latency:histogram_quantile
-    - expr: histogram_quantile(0.5, sum(rate(scheduler_e2e_scheduling_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.5, sum(rate(scheduler_e2e_scheduling_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.5"
+        quantile: '0.5'
       record: cluster_quantile:scheduler_e2e_scheduling_latency:histogram_quantile
-    - expr: histogram_quantile(0.5, sum(rate(scheduler_scheduling_algorithm_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.5, sum(rate(scheduler_scheduling_algorithm_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.5"
+        quantile: '0.5'
       record: cluster_quantile:scheduler_scheduling_algorithm_latency:histogram_quantile
-    - expr: histogram_quantile(0.5, sum(rate(scheduler_binding_latency_microseconds_bucket{job="kube-scheduler"}[5m]))
-        without(instance, pod)) / 1e+06
+    - expr: histogram_quantile(0.5, sum(rate(scheduler_binding_latency_microseconds_bucket{job="kube-scheduler"}[5m])) without(instance, pod)) / 1e+06
       labels:
-        quantile: "0.5"
+        quantile: '0.5'
       record: cluster_quantile:scheduler_binding_latency:histogram_quantile
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kubernetes-absent.yaml
+# Generated from 'kubernetes-absent' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kubernetes-absent
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kubernetes-absent
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kubernetes-absent
@@ -22812,8 +22853,7 @@ spec:
       annotations:
         message: Alertmanager has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerdown
-      expr: absent(up{job="prometheus-operator-alertmanager",namespace="prometheus"}
-        == 1)
+      expr: absent(up{job="prometheus-grafana-alertma-alertmanager",namespace="default"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -22869,8 +22909,7 @@ spec:
       annotations:
         message: Prometheus has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusdown
-      expr: absent(up{job="prometheus-operator-prometheus",namespace="prometheus"}
-        == 1)
+      expr: absent(up{job="prometheus-grafana-alertma-prometheus",namespace="default"} == 1)
       for: 15m
       labels:
         severity: critical
@@ -22878,52 +22917,48 @@ spec:
       annotations:
         message: PrometheusOperator has disappeared from Prometheus target discovery.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatordown
-      expr: absent(up{job="prometheus-operator-operator",namespace="prometheus"} ==
-        1)
+      expr: absent(up{job="prometheus-grafana-alertma-operator",namespace="default"} == 1)
       for: 15m
       labels:
         severity: critical
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kubernetes-apps.yaml
+# Generated from 'kubernetes-apps' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kubernetes-apps
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kubernetes-apps
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kubernetes-apps
     rules:
     - alert: KubePodCrashLooping
       annotations:
-        message: Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
-          }}) is restarting {{ printf "%.2f" $value }} times / 5 minutes.
+        message: Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is restarting {{ printf "%.2f" $value }} times / 5 minutes.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodcrashlooping
-      expr: rate(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[15m])
-        * 60 * 5 > 0
+      expr: rate(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[15m]) * 60 * 5 > 0
       for: 1h
       labels:
         severity: critical
     - alert: KubePodNotReady
       annotations:
-        message: Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready
-          state for longer than an hour.
+        message: Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than an hour.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready
-      expr: sum by (namespace, pod) (kube_pod_status_phase{job="kube-state-metrics",
-        phase=~"Pending|Unknown"}) > 0
+      expr: sum by (namespace, pod) (kube_pod_status_phase{job="kube-state-metrics", phase=~"Pending|Unknown"}) > 0
       for: 1h
       labels:
         severity: critical
     - alert: KubeDeploymentGenerationMismatch
       annotations:
-        message: Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment
-          }} does not match, this indicates that the Deployment has failed but has
-          not been rolled back.
+        message: Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment }} does not match, this indicates that the Deployment has failed but has not been rolled back.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentgenerationmismatch
       expr: |-
         kube_deployment_status_observed_generation{job="kube-state-metrics"}
@@ -22934,8 +22969,7 @@ spec:
         severity: critical
     - alert: KubeDeploymentReplicasMismatch
       annotations:
-        message: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not
-          matched the expected number of replicas for longer than an hour.
+        message: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of replicas for longer than an hour.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentreplicasmismatch
       expr: |-
         kube_deployment_spec_replicas{job="kube-state-metrics"}
@@ -22946,8 +22980,7 @@ spec:
         severity: critical
     - alert: KubeStatefulSetReplicasMismatch
       annotations:
-        message: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has
-          not matched the expected number of replicas for longer than 15 minutes.
+        message: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} has not matched the expected number of replicas for longer than 15 minutes.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetreplicasmismatch
       expr: |-
         kube_statefulset_status_replicas_ready{job="kube-state-metrics"}
@@ -22958,9 +22991,7 @@ spec:
         severity: critical
     - alert: KubeStatefulSetGenerationMismatch
       annotations:
-        message: StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset
-          }} does not match, this indicates that the StatefulSet has failed but has
-          not been rolled back.
+        message: StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset }} does not match, this indicates that the StatefulSet has failed but has not been rolled back.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetgenerationmismatch
       expr: |-
         kube_statefulset_status_observed_generation{job="kube-state-metrics"}
@@ -22971,8 +23002,7 @@ spec:
         severity: critical
     - alert: KubeStatefulSetUpdateNotRolledOut
       annotations:
-        message: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} update
-          has not been rolled out.
+        message: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} update has not been rolled out.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetupdatenotrolledout
       expr: |-
         max without (revision) (
@@ -22991,8 +23021,7 @@ spec:
         severity: critical
     - alert: KubeDaemonSetRolloutStuck
       annotations:
-        message: Only {{ $value }}% of the desired Pods of DaemonSet {{ $labels.namespace
-          }}/{{ $labels.daemonset }} are scheduled and ready.
+        message: Only {{ $value }}% of the desired Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are scheduled and ready.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetrolloutstuck
       expr: |-
         kube_daemonset_status_number_ready{job="kube-state-metrics"}
@@ -23003,8 +23032,7 @@ spec:
         severity: critical
     - alert: KubeDaemonSetNotScheduled
       annotations:
-        message: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset
-          }} are not scheduled.'
+        message: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are not scheduled.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetnotscheduled
       expr: |-
         kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"}
@@ -23015,18 +23043,15 @@ spec:
         severity: warning
     - alert: KubeDaemonSetMisScheduled
       annotations:
-        message: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset
-          }} are running where they are not supposed to run.'
+        message: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} are running where they are not supposed to run.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetmisscheduled
-      expr: kube_daemonset_status_number_misscheduled{job="kube-state-metrics"} >
-        0
+      expr: kube_daemonset_status_number_misscheduled{job="kube-state-metrics"} > 0
       for: 10m
       labels:
         severity: warning
     - alert: KubeCronJobRunning
       annotations:
-        message: CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more
-          than 1h to complete.
+        message: CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more than 1h to complete.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecronjobrunning
       expr: time() - kube_cronjob_next_schedule_time{job="kube-state-metrics"} > 3600
       for: 1h
@@ -23034,11 +23059,9 @@ spec:
         severity: warning
     - alert: KubeJobCompletion
       annotations:
-        message: Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more
-          than one hour to complete.
+        message: Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking more than one hour to complete.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion
-      expr: kube_job_spec_completions{job="kube-state-metrics"} - kube_job_status_succeeded{job="kube-state-metrics"}  >
-        0
+      expr: kube_job_spec_completions{job="kube-state-metrics"} - kube_job_status_succeeded{job="kube-state-metrics"}  > 0
       for: 1h
       labels:
         severity: warning
@@ -23050,26 +23073,28 @@ spec:
       for: 1h
       labels:
         severity: warning
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kubernetes-resources.yaml
+# Generated from 'kubernetes-resources' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kubernetes-resources
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kubernetes-resources
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kubernetes-resources
     rules:
     - alert: KubeCPUOvercommit
       annotations:
-        message: Cluster has overcommitted CPU resource requests for Pods and cannot
-          tolerate node failure.
+        message: Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuovercommit
       expr: |-
         sum(namespace_name:kube_pod_container_resource_requests_cpu_cores:sum)
@@ -23082,8 +23107,7 @@ spec:
         severity: warning
     - alert: KubeMemOvercommit
       annotations:
-        message: Cluster has overcommitted memory resource requests for Pods and cannot
-          tolerate node failure.
+        message: Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubememovercommit
       expr: |-
         sum(namespace_name:kube_pod_container_resource_requests_memory_bytes:sum)
@@ -23122,8 +23146,7 @@ spec:
         severity: warning
     - alert: KubeQuotaExceeded
       annotations:
-        message: Namespace {{ $labels.namespace }} is using {{ printf "%0.0f" $value
-          }}% of its {{ $labels.resource }} quota.
+        message: Namespace {{ $labels.namespace }} is using {{ printf "%0.0f" $value }}% of its {{ $labels.resource }} quota.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotaexceeded
       expr: |-
         100 * kube_resourcequota{job="kube-state-metrics", type="used"}
@@ -23135,9 +23158,7 @@ spec:
         severity: warning
     - alert: CPUThrottlingHigh
       annotations:
-        message: '{{ printf "%0.0f" $value }}% throttling of CPU in namespace {{ $labels.namespace
-          }} for container {{ $labels.container_name }} in pod {{ $labels.pod_name
-          }}.'
+        message: '{{ printf "%0.0f" $value }}% throttling of CPU in namespace {{ $labels.namespace }} for container {{ $labels.container_name }} in pod {{ $labels.pod_name }}.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-cputhrottlinghigh
       expr: |-
         100 * sum(increase(container_cpu_cfs_throttled_periods_total{container_name!="", }[5m])) by (container_name, pod_name, namespace)
@@ -23147,27 +23168,28 @@ spec:
       for: 15m
       labels:
         severity: warning
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kubernetes-storage.yaml
+# Generated from 'kubernetes-storage' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kubernetes-storage
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kubernetes-storage
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kubernetes-storage
     rules:
     - alert: KubePersistentVolumeUsageCritical
       annotations:
-        message: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim
-          }} in Namespace {{ $labels.namespace }} is only {{ printf "%0.2f" $value
-          }}% free.
+        message: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is only {{ printf "%0.2f" $value }}% free.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeusagecritical
       expr: |-
         100 * kubelet_volume_stats_available_bytes{job="kubelet"}
@@ -23179,9 +23201,7 @@ spec:
         severity: critical
     - alert: KubePersistentVolumeFullInFourDays
       annotations:
-        message: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim
-          }} in Namespace {{ $labels.namespace }} is expected to fill up within four
-          days. Currently {{ printf "%0.2f" $value }}% is available.
+        message: Based on recent sampling, the PersistentVolume claimed by {{ $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is expected to fill up within four days. Currently {{ printf "%0.2f" $value }}% is available.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefullinfourdays
       expr: |-
         100 * (
@@ -23196,26 +23216,27 @@ spec:
         severity: critical
     - alert: KubePersistentVolumeErrors
       annotations:
-        message: The persistent volume {{ $labels.persistentvolume }} has status {{
-          $labels.phase }}.
+        message: The persistent volume {{ $labels.persistentvolume }} has status {{ $labels.phase }}.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeerrors
-      expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"}
-        > 0
+      expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"} > 0
       for: 5m
       labels:
         severity: critical
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/kubernetes-system.yaml
+# Generated from 'kubernetes-system' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-kubernetes-system
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kubernetes-system
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: kubernetes-system
@@ -23224,25 +23245,21 @@ spec:
       annotations:
         message: '{{ $labels.node }} has been unready for more than an hour.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodenotready
-      expr: kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"}
-        == 0
+      expr: kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
       for: 1h
       labels:
         severity: warning
     - alert: KubeVersionMismatch
       annotations:
-        message: There are {{ $value }} different semantic versions of Kubernetes
-          components running.
+        message: There are {{ $value }} different semantic versions of Kubernetes components running.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeversionmismatch
-      expr: count(count by (gitVersion) (label_replace(kubernetes_build_info{job!="kube-dns"},"gitVersion","$1","gitVersion","(v[0-9]*.[0-9]*.[0-9]*).*")))
-        > 1
+      expr: count(count by (gitVersion) (label_replace(kubernetes_build_info{job!="kube-dns"},"gitVersion","$1","gitVersion","(v[0-9]*.[0-9]*.[0-9]*).*"))) > 1
       for: 1h
       labels:
         severity: warning
     - alert: KubeClientErrors
       annotations:
-        message: Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance
-          }}' is experiencing {{ printf "%0.0f" $value }}% errors.'
+        message: Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance }}' is experiencing {{ printf "%0.0f" $value }}% errors.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclienterrors
       expr: |-
         (sum(rate(rest_client_requests_total{code=~"5.."}[5m])) by (instance, job)
@@ -23254,18 +23271,15 @@ spec:
         severity: warning
     - alert: KubeClientErrors
       annotations:
-        message: Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance
-          }}' is experiencing {{ printf "%0.0f" $value }} errors / second.
+        message: Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance }}' is experiencing {{ printf "%0.0f" $value }} errors / second.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclienterrors
-      expr: sum(rate(ksm_scrape_error_total{job="kube-state-metrics"}[5m])) by (instance,
-        job) > 0.1
+      expr: sum(rate(ksm_scrape_error_total{job="kube-state-metrics"}[5m])) by (instance, job) > 0.1
       for: 15m
       labels:
         severity: warning
     - alert: KubeletTooManyPods
       annotations:
-        message: Kubelet {{ $labels.instance }} is running {{ $value }} Pods, close
-          to the limit of 110.
+        message: Kubelet {{ $labels.instance }} is running {{ $value }} Pods, close to the limit of 110.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubelettoomanypods
       expr: kubelet_running_pod_count{job="kubelet"} > 110 * 0.9
       for: 15m
@@ -23273,21 +23287,17 @@ spec:
         severity: warning
     - alert: KubeAPILatencyHigh
       annotations:
-        message: The API server has a 99th percentile latency of {{ $value }} seconds
-          for {{ $labels.verb }} {{ $labels.resource }}.
+        message: The API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapilatencyhigh
-      expr: cluster_quantile:apiserver_request_latencies:histogram_quantile{job="apiserver",quantile="0.99",subresource!="log",verb!~"^(?:LIST|WATCH|WATCHLIST|PROXY|CONNECT)$"}
-        > 1
+      expr: cluster_quantile:apiserver_request_latencies:histogram_quantile{job="apiserver",quantile="0.99",subresource!="log",verb!~"^(?:LIST|WATCH|WATCHLIST|PROXY|CONNECT)$"} > 1
       for: 10m
       labels:
         severity: warning
     - alert: KubeAPILatencyHigh
       annotations:
-        message: The API server has a 99th percentile latency of {{ $value }} seconds
-          for {{ $labels.verb }} {{ $labels.resource }}.
+        message: The API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapilatencyhigh
-      expr: cluster_quantile:apiserver_request_latencies:histogram_quantile{job="apiserver",quantile="0.99",subresource!="log",verb!~"^(?:LIST|WATCH|WATCHLIST|PROXY|CONNECT)$"}
-        > 4
+      expr: cluster_quantile:apiserver_request_latencies:histogram_quantile{job="apiserver",quantile="0.99",subresource!="log",verb!~"^(?:LIST|WATCH|WATCHLIST|PROXY|CONNECT)$"} > 4
       for: 10m
       labels:
         severity: critical
@@ -23315,8 +23325,7 @@ spec:
         severity: warning
     - alert: KubeAPIErrorsHigh
       annotations:
-        message: API server is returning errors for {{ $value }}% of requests for
-          {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.
+        message: API server is returning errors for {{ $value }}% of requests for {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorshigh
       expr: |-
         sum(rate(apiserver_request_count{job="apiserver",code=~"^(?:5..)$"}[5m])) by (resource,subresource,verb)
@@ -23327,8 +23336,7 @@ spec:
         severity: critical
     - alert: KubeAPIErrorsHigh
       annotations:
-        message: API server is returning errors for {{ $value }}% of requests for
-          {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.
+        message: API server is returning errors for {{ $value }}% of requests for {{ $labels.verb }} {{ $labels.resource }} {{ $labels.subresource }}.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorshigh
       expr: |-
         sum(rate(apiserver_request_count{job="apiserver",code=~"^(?:5..)$"}[5m])) by (resource,subresource,verb)
@@ -23339,110 +23347,108 @@ spec:
         severity: warning
     - alert: KubeClientCertificateExpiration
       annotations:
-        message: A client certificate used to authenticate to the apiserver is expiring
-          in less than 7.0 days.
+        message: A client certificate used to authenticate to the apiserver is expiring in less than 7.0 days.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
-      expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
-        > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
-        < 604800
+      expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 604800
       labels:
         severity: warning
     - alert: KubeClientCertificateExpiration
       annotations:
-        message: A client certificate used to authenticate to the apiserver is expiring
-          in less than 24.0 hours.
+        message: A client certificate used to authenticate to the apiserver is expiring in less than 24.0 hours.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
-      expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
-        > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
-        < 86400
+      expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 86400
       labels:
         severity: critical
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/node-network.yaml
+# Generated from 'node-network' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-node-network
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-node-network
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: node-network
     rules:
     - alert: NetworkReceiveErrors
       annotations:
-        message: Network interface "{{ $labels.device }}" showing receive errors on
-          node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
-      expr: rate(node_network_receive_errs_total{job="node-exporter",device!~"veth.+"}[2m])
-        > 0
+        message: Network interface "{{ $labels.device }}" showing receive errors on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
+      expr: rate(node_network_receive_errs_total{job="node-exporter",device!~"veth.+"}[2m]) > 0
       for: 2m
       labels:
         severity: warning
     - alert: NetworkTransmitErrors
       annotations:
-        message: Network interface "{{ $labels.device }}" showing transmit errors
-          on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
-      expr: rate(node_network_transmit_errs_total{job="node-exporter",device!~"veth.+"}[2m])
-        > 0
+        message: Network interface "{{ $labels.device }}" showing transmit errors on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
+      expr: rate(node_network_transmit_errs_total{job="node-exporter",device!~"veth.+"}[2m]) > 0
       for: 2m
       labels:
         severity: warning
     - alert: NodeNetworkInterfaceFlapping
       annotations:
-        message: Network interface "{{ $labels.device }}" changing it's up status
-          often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
+        message: Network interface "{{ $labels.device }}" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
       expr: changes(node_network_up{job="node-exporter",device!~"veth.+"}[2m]) > 2
       for: 2m
       labels:
         severity: warning
 
 ---
+# Source: prometheus-operator/templates/prometheus/rules/node-time.yaml
+# Generated from 'node-time' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-node-time
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-node-time
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: node-time
     rules:
     - alert: ClockSkewDetected
       annotations:
-        message: Clock skew detected on node-exporter {{ $labels.namespace }}/{{ $labels.pod
-          }}. Ensure NTP is configured correctly on this host.
+        message: Clock skew detected on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}. Ensure NTP is configured correctly on this host.
       expr: abs(node_timex_offset_seconds{job="node-exporter"}) > 0.03
       for: 2m
       labels:
         severity: warning
 
 ---
+# Source: prometheus-operator/templates/prometheus/rules/node.rules.yaml
+# Generated from 'node.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-node.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-node.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: node.rules
     rules:
     - expr: sum(min(kube_pod_info) by (node))
       record: ':kube_pod_info_node_count:'
-    - expr: max(label_replace(kube_pod_info{job="kube-state-metrics"}, "pod", "$1",
-        "pod", "(.*)")) by (node, namespace, pod)
+    - expr: max(label_replace(kube_pod_info{job="kube-state-metrics"}, "pod", "$1", "pod", "(.*)")) by (node, namespace, pod)
       record: 'node_namespace_pod:kube_pod_info:'
     - expr: |-
         count by (node) (sum by (node, cpu) (
@@ -23486,8 +23492,7 @@ spec:
         /
         sum(node_memory_MemTotal_bytes{job="node-exporter"})
       record: ':node_memory_utilisation:'
-    - expr: sum(node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"}
-        + node_memory_Buffers_bytes{job="node-exporter"})
+    - expr: sum(node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"} + node_memory_Buffers_bytes{job="node-exporter"})
       record: :node_memory_MemFreeCachedBuffers_bytes:sum
     - expr: sum(node_memory_MemTotal_bytes{job="node-exporter"})
       record: :node_memory_MemTotal_bytes:sum
@@ -23568,8 +23573,7 @@ spec:
         - node_filesystem_avail_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
         / node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
       record: 'node:node_filesystem_usage:'
-    - expr: max by (instance, namespace, pod, device) (node_filesystem_avail_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"}
-        / node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
+    - expr: max by (instance, namespace, pod, device) (node_filesystem_avail_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"} / node_filesystem_size_bytes{fstype=~"ext[234]|btrfs|xfs|zfs"})
       record: 'node:node_filesystem_avail:'
     - expr: |-
         sum(irate(node_network_receive_bytes_total{job="node-exporter",device!~"veth.+"}[1m])) +
@@ -23617,51 +23621,54 @@ spec:
           )
         ) by (node)
       record: 'node:node_inodes_free:'
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/prometheus-operator.yaml
+# Generated from 'prometheus-operator' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-prometheus-operator
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: prometheus-operator
     rules:
     - alert: PrometheusOperatorReconcileErrors
       annotations:
-        message: Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace
-          }} Namespace.
-      expr: rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator-operator",namespace="prometheus"}[5m])
-        > 0.1
+        message: Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace }} Namespace.
+      expr: rate(prometheus_operator_reconcile_errors_total{job="prometheus-grafana-alertma-operator",namespace="default"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
     - alert: PrometheusOperatorNodeLookupErrors
       annotations:
         message: Errors while reconciling Prometheus in {{ $labels.namespace }} Namespace.
-      expr: rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator-operator",namespace="prometheus"}[5m])
-        > 0.1
+      expr: rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-grafana-alertma-operator",namespace="default"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
-
 ---
+# Source: prometheus-operator/templates/prometheus/rules/prometheus.rules.yaml
+# Generated from 'prometheus.rules' group from https://raw.githubusercontent.com/coreos/kube-prometheus/master/manifests/prometheus-rules.yaml
+# Do not change in-place! In order to change this file first read following link:
+# https://github.com/helm/charts/tree/master/stable/prometheus-operator/hack
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
+  name: prometheus-grafana-alertma-prometheus.rules
   labels:
     app: prometheus-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus.rules
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   groups:
   - name: prometheus.rules
@@ -23670,162 +23677,146 @@ spec:
       annotations:
         description: Reloading Prometheus' configuration has failed for {{$labels.namespace}}/{{$labels.pod}}
         summary: Reloading Prometheus' configuration failed
-      expr: prometheus_config_last_reload_successful{job="prometheus-operator-prometheus",namespace="prometheus"}
-        == 0
+      expr: prometheus_config_last_reload_successful{job="prometheus-grafana-alertma-prometheus",namespace="default"} == 0
       for: 10m
       labels:
         severity: warning
     - alert: PrometheusNotificationQueueRunningFull
       annotations:
-        description: Prometheus' alert notification queue is running full for {{$labels.namespace}}/{{
-          $labels.pod}}
+        description: Prometheus' alert notification queue is running full for {{$labels.namespace}}/{{ $labels.pod}}
         summary: Prometheus' alert notification queue is running full
-      expr: predict_linear(prometheus_notifications_queue_length{job="prometheus-operator-prometheus",namespace="prometheus"}[5m],
-        60 * 30) > prometheus_notifications_queue_capacity{job="prometheus-operator-prometheus",namespace="prometheus"}
+      expr: predict_linear(prometheus_notifications_queue_length{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m], 60 * 30) > prometheus_notifications_queue_capacity{job="prometheus-grafana-alertma-prometheus",namespace="default"}
       for: 10m
       labels:
         severity: warning
     - alert: PrometheusErrorSendingAlerts
       annotations:
-        description: Errors while sending alerts from Prometheus {{$labels.namespace}}/{{
-          $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
+        description: Errors while sending alerts from Prometheus {{$labels.namespace}}/{{ $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
         summary: Errors while sending alert from Prometheus
-      expr: rate(prometheus_notifications_errors_total{job="prometheus-operator-prometheus",namespace="prometheus"}[5m])
-        / rate(prometheus_notifications_sent_total{job="prometheus-operator-prometheus",namespace="prometheus"}[5m])
-        > 0.01
+      expr: rate(prometheus_notifications_errors_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m]) > 0.01
       for: 10m
       labels:
         severity: warning
     - alert: PrometheusErrorSendingAlerts
       annotations:
-        description: Errors while sending alerts from Prometheus {{$labels.namespace}}/{{
-          $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
+        description: Errors while sending alerts from Prometheus {{$labels.namespace}}/{{ $labels.pod}} to Alertmanager {{$labels.Alertmanager}}
         summary: Errors while sending alerts from Prometheus
-      expr: rate(prometheus_notifications_errors_total{job="prometheus-operator-prometheus",namespace="prometheus"}[5m])
-        / rate(prometheus_notifications_sent_total{job="prometheus-operator-prometheus",namespace="prometheus"}[5m])
-        > 0.03
+      expr: rate(prometheus_notifications_errors_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m]) / rate(prometheus_notifications_sent_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m]) > 0.03
       for: 10m
       labels:
         severity: critical
     - alert: PrometheusNotConnectedToAlertmanagers
       annotations:
-        description: Prometheus {{ $labels.namespace }}/{{ $labels.pod}} is not connected
-          to any Alertmanagers
+        description: Prometheus {{ $labels.namespace }}/{{ $labels.pod}} is not connected to any Alertmanagers
         summary: Prometheus is not connected to any Alertmanagers
-      expr: prometheus_notifications_alertmanagers_discovered{job="prometheus-operator-prometheus",namespace="prometheus"}
-        < 1
+      expr: prometheus_notifications_alertmanagers_discovered{job="prometheus-grafana-alertma-prometheus",namespace="default"} < 1
       for: 10m
       labels:
         severity: warning
     - alert: PrometheusTSDBReloadsFailing
       annotations:
-        description: '{{$labels.job}} at {{$labels.instance}} had {{$value | humanize}}
-          reload failures over the last four hours.'
+        description: '{{$labels.job}} at {{$labels.instance}} had {{$value | humanize}} reload failures over the last four hours.'
         summary: Prometheus has issues reloading data blocks from disk
-      expr: increase(prometheus_tsdb_reloads_failures_total{job="prometheus-operator-prometheus",namespace="prometheus"}[2h])
-        > 0
+      expr: increase(prometheus_tsdb_reloads_failures_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[2h]) > 0
       for: 12h
       labels:
         severity: warning
     - alert: PrometheusTSDBCompactionsFailing
       annotations:
-        description: '{{$labels.job}} at {{$labels.instance}} had {{$value | humanize}}
-          compaction failures over the last four hours.'
+        description: '{{$labels.job}} at {{$labels.instance}} had {{$value | humanize}} compaction failures over the last four hours.'
         summary: Prometheus has issues compacting sample blocks
-      expr: increase(prometheus_tsdb_compactions_failed_total{job="prometheus-operator-prometheus",namespace="prometheus"}[2h])
-        > 0
+      expr: increase(prometheus_tsdb_compactions_failed_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[2h]) > 0
       for: 12h
       labels:
         severity: warning
     - alert: PrometheusTSDBWALCorruptions
       annotations:
-        description: '{{$labels.job}} at {{$labels.instance}} has a corrupted write-ahead
-          log (WAL).'
+        description: '{{$labels.job}} at {{$labels.instance}} has a corrupted write-ahead log (WAL).'
         summary: Prometheus write-ahead log is corrupted
-      expr: prometheus_tsdb_wal_corruptions_total{job="prometheus-operator-prometheus",namespace="prometheus"}
-        > 0
+      expr: prometheus_tsdb_wal_corruptions_total{job="prometheus-grafana-alertma-prometheus",namespace="default"} > 0
       for: 4h
       labels:
         severity: warning
     - alert: PrometheusNotIngestingSamples
       annotations:
-        description: Prometheus {{ $labels.namespace }}/{{ $labels.pod}} isn't ingesting
-          samples.
+        description: Prometheus {{ $labels.namespace }}/{{ $labels.pod}} isn't ingesting samples.
         summary: Prometheus isn't ingesting samples
-      expr: rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-operator-prometheus",namespace="prometheus"}[5m])
-        <= 0
+      expr: rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m]) <= 0
       for: 10m
       labels:
         severity: warning
     - alert: PrometheusTargetScrapesDuplicate
       annotations:
-        description: '{{$labels.namespace}}/{{$labels.pod}} has many samples rejected
-          due to duplicate timestamps but different values'
+        description: '{{$labels.namespace}}/{{$labels.pod}} has many samples rejected due to duplicate timestamps but different values'
         summary: Prometheus has many samples rejected
-      expr: increase(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-operator-prometheus",namespace="prometheus"}[5m])
-        > 0
+      expr: increase(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-grafana-alertma-prometheus",namespace="default"}[5m]) > 0
       for: 10m
       labels:
         severity: warning
-
 ---
+# Source: prometheus-operator/templates/alertmanager/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-alertmanager
   labels:
     app: prometheus-operator-alertmanager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - path: /metrics
-    port: web
-  namespaceSelector:
-    matchNames:
-    - prometheus
   selector:
     matchLabels:
       app: prometheus-operator-alertmanager
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "default"
+  endpoints:
+  - port: web
+    path: "/metrics"
 
 ---
+# Source: prometheus-operator/templates/exporters/core-dns/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-coredns
   labels:
     app: prometheus-operator-coredns
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-coredns
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: http-metrics
   jobLabel: jobLabel
-  namespaceSelector:
-    matchNames:
-    - kube-system
   selector:
     matchLabels:
       app: prometheus-operator-coredns
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+  endpoints:
+  - port: http-metrics
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 ---
+# Source: prometheus-operator/templates/exporters/kube-api-server/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-apiserver
   labels:
     app: prometheus-operator-apiserver
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-apiserver
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -23833,8 +23824,8 @@ spec:
     scheme: https
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      insecureSkipVerify: false
       serverName: kubernetes
+      insecureSkipVerify: false
   jobLabel: component
   namespaceSelector:
     matchNames:
@@ -23843,152 +23834,165 @@ spec:
     matchLabels:
       component: apiserver
       provider: kubernetes
+    
 
 ---
+# Source: prometheus-operator/templates/exporters/kube-controller-manager/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-kube-controller-manager
   labels:
     app: prometheus-operator-kube-controller-manager
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-controller-manager
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: http-metrics
   jobLabel: jobLabel
-  namespaceSelector:
-    matchNames:
-    - kube-system
   selector:
     matchLabels:
       app: prometheus-operator-kube-controller-manager
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+  endpoints:
+  - port: http-metrics
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 ---
+# Source: prometheus-operator/templates/exporters/kube-etcd/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-kube-etcd
   labels:
     app: prometheus-operator-kube-etcd
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-etcd
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: http-metrics
   jobLabel: jobLabel
-  namespaceSelector:
-    matchNames:
-    - kube-system
   selector:
     matchLabels:
       app: prometheus-operator-kube-etcd
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+  endpoints:
+  - port: http-metrics
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 ---
+# Source: prometheus-operator/templates/exporters/kube-proxy/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-kube-proxy
   labels:
     app: prometheus-operator-kube-proxy
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-proxy
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: http-metrics
   jobLabel: jobLabel
-  namespaceSelector:
-    matchNames:
-    - kube-system
   selector:
     matchLabels:
       app: prometheus-operator-kube-proxy
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+  endpoints:
+  - port: http-metrics
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 ---
+# Source: prometheus-operator/templates/exporters/kube-scheduler/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-kube-scheduler
   labels:
     app: prometheus-operator-kube-scheduler
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-scheduler
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    port: http-metrics
   jobLabel: jobLabel
-  namespaceSelector:
-    matchNames:
-    - kube-system
   selector:
     matchLabels:
       app: prometheus-operator-kube-scheduler
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "kube-system"
+  endpoints:
+  - port: http-metrics
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
 
 ---
+# Source: prometheus-operator/templates/exporters/kube-state-metrics/serviceMonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-kube-state-metrics
   labels:
     app: prometheus-operator-kube-state-metrics
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kube-state-metrics
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - honorLabels: true
-    port: http
   jobLabel: app.kubernetes.io/name
+  endpoints:
+  - port: http
+    honorLabels: true
   selector:
     matchLabels:
-      app.kubernetes.io/instance: prometheus-operator
       app.kubernetes.io/name: kube-state-metrics
+      app.kubernetes.io/instance: "prometheus-grafana-alertmanater"
 
 ---
+# Source: prometheus-operator/templates/exporters/kubelet/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-kubelet
   labels:
     app: prometheus-operator-kubelet
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-kubelet
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    honorLabels: true
-    port: https-metrics
+  - port: https-metrics
     scheme: https
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       insecureSkipVerify: true
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     honorLabels: true
+  - port: https-metrics
+    scheme: https
     path: /metrics/cadvisor
-    port: https-metrics
-    scheme: https
+    honorLabels: true
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       insecureSkipVerify: true
+    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
   jobLabel: k8s-app
   namespaceSelector:
     matchNames:
@@ -23998,121 +24002,204 @@ spec:
       k8s-app: kubelet
 
 ---
+# Source: prometheus-operator/templates/exporters/node-exporter/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-node-exporter
   labels:
     app: prometheus-operator-node-exporter
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-node-exporter
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - port: metrics
   jobLabel: jobLabel
   selector:
     matchLabels:
       app: prometheus-node-exporter
-      release: prometheus-operator
+      release: prometheus-grafana-alertmanater
+  endpoints:
+  - port: metrics
 
 ---
+# Source: prometheus-operator/templates/grafana/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-grafana
   labels:
     app: prometheus-operator-grafana
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - path: /metrics
-    port: service
-  namespaceSelector:
-    matchNames:
-    - prometheus
   selector:
     matchLabels:
       app: grafana
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "default"
+  endpoints:
+  - port: service
+    path: "/metrics"
 
 ---
+# Source: prometheus-operator/templates/prometheus-operator/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-operator
   labels:
     app: prometheus-operator-operator
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
   endpoints:
-  - honorLabels: true
-    port: http
-  namespaceSelector:
-    matchNames:
-    - prometheus
+  - port: http
+    honorLabels: true
   selector:
     matchLabels:
       app: prometheus-operator-operator
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "default"
 
 ---
+# Source: prometheus-operator/templates/prometheus/servicemonitor.yaml
+
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: prometheus-grafana-alertma-prometheus
   labels:
     app: prometheus-operator-prometheus
+    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 spec:
-  endpoints:
-  - path: /metrics
-    port: web
-  namespaceSelector:
-    matchNames:
-    - prometheus
   selector:
     matchLabels:
       app: prometheus-operator-prometheus
-      release: prometheus-operator
+      release: "prometheus-grafana-alertmanater"
+  namespaceSelector:
+    matchNames:
+      - "default"
+  endpoints:
+  - port: web
+    path: "/metrics"
 
 ---
+# Source: prometheus-operator/charts/grafana/templates/dashboards-json-configmap.yaml
+
+
+---
+# Source: prometheus-operator/charts/grafana/templates/ingress.yaml
+
+
+---
+# Source: prometheus-operator/charts/grafana/templates/pvc.yaml
+
+---
+# Source: prometheus-operator/charts/kube-state-metrics/templates/servicemonitor.yaml
+
+
+---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/endpoints.yaml
+
+---
+# Source: prometheus-operator/charts/prometheus-node-exporter/templates/monitor.yaml
+
+
+---
+# Source: prometheus-operator/templates/alertmanager/ingress.yaml
+
+---
+# Source: prometheus-operator/templates/alertmanager/podDisruptionBudget.yaml
+
+---
+# Source: prometheus-operator/templates/exporters/kube-controller-manager/endpoints.yaml
+
+---
+# Source: prometheus-operator/templates/exporters/kube-dns/service.yaml
+
+---
+# Source: prometheus-operator/templates/exporters/kube-dns/servicemonitor.yaml
+
+
+---
+# Source: prometheus-operator/templates/exporters/kube-etcd/endpoints.yaml
+
+---
+# Source: prometheus-operator/templates/exporters/kube-scheduler/endpoints.yaml
+
+---
+# Source: prometheus-operator/templates/grafana/configmap-dashboards.yaml
+
+
+---
+# Source: prometheus-operator/templates/prometheus-operator/cleanup-crds.yaml
+
+
+---
+# Source: prometheus-operator/templates/prometheus/additionalAlertRelabelConfigs.yaml
+
+---
+# Source: prometheus-operator/templates/prometheus/additionalAlertmanagerConfigs.yaml
+
+---
+# Source: prometheus-operator/templates/prometheus/additionalPrometheusRules.yaml
+
+
+---
+# Source: prometheus-operator/templates/prometheus/additionalScrapeConfigs.yaml
+
+---
+# Source: prometheus-operator/templates/prometheus/ingress.yaml
+
+---
+# Source: prometheus-operator/templates/prometheus/podDisruptionBudget.yaml
+
+---
+# Source: prometheus-operator/templates/prometheus/servicemonitors.yaml
+
+
+---
+# Source: prometheus-operator/templates/prometheus-operator/admission-webhooks/validatingWebhookConfiguration.yaml
+
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
+  name:  prometheus-grafana-alertma-admission
   labels:
-    app: prometheus-operator-admission
+    app: prometheus-operator-admission    
     chart: prometheus-operator-6.4.1
-    heritage: Tiller
-    release: prometheus-operator
-  name: prometheus-operator-admission
-  namespace: prometheus
+    release: "prometheus-grafana-alertmanater"
+    heritage: "Tiller"
 webhooks:
-- clientConfig:
-    service:
-      name: prometheus-operator-operator
-      namespace: prometheus
-      path: /admission-prometheusrules/validate
-  failurePolicy: Ignore
-  name: prometheusrulemutate.monitoring.coreos.com
-  rules:
-  - apiGroups:
-    - monitoring.coreos.com
-    apiVersions:
-    - '*'
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - prometheusrules
-
+  - name: prometheusrulemutate.monitoring.coreos.com
+    failurePolicy: Ignore
+    rules:
+      - apiGroups:
+          - monitoring.coreos.com
+        apiVersions:
+          - "*"
+        resources:
+          - prometheusrules
+        operations:
+          - CREATE
+          - UPDATE
+    clientConfig:
+      service:
+        namespace: default
+        name: prometheus-grafana-alertma-operator
+        path: /admission-prometheusrules/validate
