@@ -41,8 +41,14 @@ subcomponents:
                   elasticsearch.url: "http://elasticsearch-client.elasticsearch.svc.cluster.local:9200"
 
   prometheus-operator:
+    injectNamespace: true
+    namespace: prometheus
     config:
       coreDns:
         enabled: true
       kubeDns:
         enabled: false
+
+  nginx-ingress:
+    injectNamespace: true
+    namespace: nginx
