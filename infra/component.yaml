@@ -1,11 +1,11 @@
 name: infra
 type: component
 subcomponents:
-- name: cloud-native
+- name: aad-pod-identity
   type: component
   source: https://github.com/smartpcr/fabrikate-definitions
   method: git
-  path: definitions/fabrikate-cloud-native
+  path: definitions/fabrikate-aad-pod-identity
   branch: master
 - name: elasticsearch-fluentd-kibana
   type: component
