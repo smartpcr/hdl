@@ -48,3 +48,12 @@ subcomponents:
             enabled: true
           kubeDns:
             enabled: false
+
+      prometheus-grafana:
+        subcomponents:
+          prometheus:
+            namespace: prometheus
+            injectNamespace: true
+          grafana:
+            namespace: prometheus
+            injectNamespace: true
