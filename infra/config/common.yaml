@@ -40,9 +40,11 @@ subcomponents:
                 kibana.yml:
                   elasticsearch.url: "http://elasticsearch-client.elasticsearch.svc.cluster.local:9200"
 
-  prometheus-operator:
-    config:
-      coreDns:
-        enabled: true
-      kubeDns:
-        enabled: false
+      prometheus-operator:
+        namespace: prometheus
+        injectNamespace: true
+        config:
+          coreDns:
+            enabled: true
+          kubeDns:
+            enabled: false

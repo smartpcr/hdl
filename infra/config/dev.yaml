@@ -16,33 +16,33 @@ subcomponents:
               data:
                 persistence:
                   size: 10Gi
-  prometheus-operator:
-    config:
-      alertmanager:
-        ingress:
-          hosts:
-            - "alertmanager-space-westus2.xiaodong.cloud"
-          tls:
-            - secretName: "sslcert-dev-xiaodong-cloud"
+      prometheus-operator:
+        config:
+          alertmanager:
+            ingress:
               hosts:
                 - "alertmanager-space-westus2.xiaodong.cloud"
+              tls:
+                - secretName: "sslcert-dev-xiaodong-cloud"
+                  hosts:
+                    - "alertmanager-space-westus2.xiaodong.cloud"
 
-      prometheus:
-        ingress:
-          hosts:
-            - "prometheus-space-westus2.xiaodong.cloud"
-          tls:
-            - secretName: "sslcert-dev-xiaodong-cloud"
+          prometheus:
+            ingress:
               hosts:
                 - "prometheus-space-westus2.xiaodong.cloud"
+              tls:
+                - secretName: "sslcert-dev-xiaodong-cloud"
+                  hosts:
+                    - "prometheus-space-westus2.xiaodong.cloud"
 
-      grafana:
-        adminUser: "admin"
-        adminPassword: "grafana"
-        ingress:
-          hosts:
-            - "grafana-space-westus2.xiaodong.cloud"
-          tls:
-            - secretName: "sslcert-dev-xiaodong-cloud"
+          grafana:
+            adminUser: "admin"
+            adminPassword: "grafana"
+            ingress:
               hosts:
                 - "grafana-space-westus2.xiaodong.cloud"
+              tls:
+                - secretName: "sslcert-dev-xiaodong-cloud"
+                  hosts:
+                    - "grafana-space-westus2.xiaodong.cloud"
