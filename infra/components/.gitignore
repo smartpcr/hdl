@@ -1,4 +1,1 @@
-cloud-native/
-external-dns/
-nginx/
-prometheus/
+**/*.*
