@@ -89,7 +89,7 @@ spec:
         - --txt-owner-id=compes-bedrock-lab-westus2
         - --log-level=debug
         - --policy=sync
-        image: oneesdevacr.azurecr.io/1es/external-dns:638873
+        image: xiaodongacr.azurecr.io/external-dns:720306
         name: external-dns
         resources:
           limits:

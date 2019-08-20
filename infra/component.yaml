@@ -31,9 +31,3 @@ subcomponents:
   method: git
   path: definitions/fabrikate-prometheus-operator
   branch: master
-- name: nginx
-  type: component
-  source: https://github.com/smartpcr/fabrikate-definitions
-  method: git
-  path: definitions/fabrikate-nginx
-  branch: master
