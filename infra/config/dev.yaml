@@ -1,21 +1,21 @@
 config:
 subcomponents:
-  cloud-native:
+
+  elasticsearch-fluentd-kibana:
     subcomponents:
-      elasticsearch-fluentd-kibana:
-        subcomponents:
-          elasticsearch:
-            config:
-              client:
-                resources:
-                  limits:
-                    memory: "1024Mi"
-                  requests:
-                    cpu: 25m
-                    memory: 256Mi
-              data:
-                persistence:
-                  size: 10Gi
+      elasticsearch:
+        config:
+          client:
+            resources:
+              limits:
+                memory: "1024Mi"
+              requests:
+                cpu: 25m
+                memory: 256Mi
+          data:
+            persistence:
+              size: 10Gi
+
   prometheus-operator:
     config:
       alertmanager:
@@ -46,3 +46,12 @@ subcomponents:
             - secretName: "sslcert-dev-xiaodong-cloud"
               hosts:
                 - "grafana-space-westus2.xiaodong.cloud"
+
+  external-dns:
+    config:
+      acr:
+        name: xiaodongacr
+      dns:
+        image:
+          name: external-dns
+          tag: 720306

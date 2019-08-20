@@ -1,11 +1,35 @@
 name: infra
 type: component
 subcomponents:
-- name: cloud-native
+- name: aad-pod-identity
   type: component
   source: https://github.com/smartpcr/fabrikate-definitions
   method: git
-  path: definitions/fabrikate-cloud-native
+  path: definitions/fabrikate-aad-pod-identity
+  branch: master
+- name: elasticsearch-fluentd-kibana
+  type: component
+  source: https://github.com/smartpcr/fabrikate-definitions
+  method: git
+  path: definitions/fabrikate-elasticsearch-fluentd-kibana
+  branch: master
+- name: external-dns
+  type: component
+  source: https://github.com/smartpcr/fabrikate-definitions
+  method: git
+  path: definitions/fabrikate-external-dns
+  branch: master
+- name: nginx
+  type: component
+  source: https://github.com/smartpcr/fabrikate-definitions
+  method: git
+  path: definitions/fabrikate-nginx
+  branch: master
+- name: prometheus-operator
+  type: component
+  source: https://github.com/smartpcr/fabrikate-definitions
+  method: git
+  path: definitions/fabrikate-prometheus-operator
   branch: master
 - name: nginx
   type: component
