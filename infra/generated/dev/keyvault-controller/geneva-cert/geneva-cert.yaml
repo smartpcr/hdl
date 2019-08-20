@@ -1,0 +1,15 @@
+---
+# Source: chart/templates/azurekeyvaultsecret.yaml
+apiVersion: spv.no/v1alpha1
+kind: AzureKeyVaultSecret
+metadata:
+  name: geneva-certificate
+  namespace: default
+spec:
+  vault:
+    name: xiaodong-kv
+    object:
+      name: geneva-certificate
+      type: certificate
+  output:
+    name: geneva-certificate

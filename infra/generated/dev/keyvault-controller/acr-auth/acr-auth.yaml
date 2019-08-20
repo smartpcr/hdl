@@ -1,0 +1,15 @@
+---
+# Source: chart/templates/azurekeyvaultsecret.yaml
+apiVersion: spv.no/v1alpha1
+kind: AzureKeyVaultSecret
+metadata:
+  name: acr-auth
+  namespace: default
+spec:
+  vault:
+    name: xiaodong-kv
+    object:
+      name: xiaodongacr-auth
+      type: multi-key-value-secret
+  output:
+    name: acr-auth

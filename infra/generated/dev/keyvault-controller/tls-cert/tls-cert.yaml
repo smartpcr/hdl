@@ -1,0 +1,15 @@
+---
+# Source: chart/templates/azurekeyvaultsecret.yaml
+apiVersion: spv.no/v1alpha1
+kind: AzureKeyVaultSecret
+metadata:
+  name: tls-cert
+  namespace: default
+spec:
+  vault:
+    name: xiaodong-kv
+    object:
+      name: tls-cert
+      type: certificate
+  output:
+    name: tls-cert
