@@ -231,6 +231,7 @@ spec:
   template:
     metadata:
       labels:
+        aadpodidbinding: kv-reader
         app: azure-key-vault-controller
         release: keyvault-controller
     spec:
@@ -249,7 +250,7 @@ spec:
             fieldRef:
               fieldPath: metadata.labels['aadpodidbinding']
         - name: CUSTOM_AUTH
-          value: "false"
+          value: "true"
         - name: LOG_LEVEL
           value: info
         image: spvest/azure-keyvault-controller:0.1.14

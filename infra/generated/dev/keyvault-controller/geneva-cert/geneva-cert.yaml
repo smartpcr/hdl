@@ -13,3 +13,4 @@ spec:
       type: certificate
   output:
     name: geneva-certificate
+    type: kubernetes.io/tls
