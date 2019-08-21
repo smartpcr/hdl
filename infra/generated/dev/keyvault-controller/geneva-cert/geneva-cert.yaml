@@ -1,4 +1,11 @@
 ---
+# Source: chart/templates/geneva-cert-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: geneva
+
+---
 # Source: chart/templates/azurekeyvaultsecret.yaml
 apiVersion: spv.no/v1alpha1
 kind: AzureKeyVaultSecret
