@@ -7,9 +7,10 @@ metadata:
   namespace: default
 spec:
   vault:
-    name: xiaodong-kv
+    name: compes-bedrock-kv
     object:
-      name: tls-cert
+      name: 1es-io-tls-cert
       type: certificate
   output:
-    name: tls-cert
+    secret:
+      name: tls-cert

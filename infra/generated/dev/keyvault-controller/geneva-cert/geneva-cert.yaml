@@ -4,13 +4,14 @@ apiVersion: spv.no/v1alpha1
 kind: AzureKeyVaultSecret
 metadata:
   name: geneva-certificate
-  namespace: default
+  namespace: geneva
 spec:
   vault:
-    name: xiaodong-kv
+    name: compes-bedrock-kv
     object:
-      name: geneva-certificate
+      name: Geneva-Certificate-Managed
       type: certificate
   output:
-    name: geneva-certificate
-    type: kubernetes.io/tls
+    secret:
+      name: geneva-certificate
+      type: kubernetes.io/tls

@@ -4,12 +4,14 @@ apiVersion: spv.no/v1alpha1
 kind: AzureKeyVaultSecret
 metadata:
   name: acr-auth
-  namespace: default
+  namespace: nginx
 spec:
   vault:
-    name: xiaodong-kv
+    name: compes-bedrock-kv
     object:
-      name: xiaodongacr-auth
+      name: compes-bedrock-acr-auth
       type: multi-key-value-secret
   output:
-    name: acr-auth
+    secret:
+      name: acr-auth
+      datakey: .dockerconfigjson

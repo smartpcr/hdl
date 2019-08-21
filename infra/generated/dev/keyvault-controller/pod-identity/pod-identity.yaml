@@ -6,7 +6,7 @@ metadata:
   name: pod-identity
 spec:
   type: 0
-  ResourceID: /subscriptions/<subid>/resourcegroups/<resourcegroup>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/compes-bedrock-kv-reader
+  ResourceID: /subscriptions/f921dcc4-9d2c-4b73-a12e-8c3ca091af03/resourcegroups/<resourcegroup>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/compes-bedrock-kv-reader
   ClientID: 9a5f7094-62ec-4d44-9b43-d631a365f8c9
 ---
 # Source: chart/templates/azureidentitybinding.yaml

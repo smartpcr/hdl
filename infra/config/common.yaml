@@ -46,3 +46,21 @@ subcomponents:
         enabled: true
       kubeDns:
         enabled: false
+
+  keyvault-controller:
+    subcomponents:
+      acr-auth:
+        config:
+          namespace: nginx
+          vault_name: compes-bedrock-kv
+          acr_auth_secret_name: compes-bedrock-acr-auth
+      geneva-cert:
+        config:
+          namespace: geneva
+          vault_name: compes-bedrock-kv
+          geneva_certificate_secret_name: Geneva-Certificate-Managed
+      tls-cert:
+        config:
+          namespace: default
+          vault_name: compes-bedrock-kv
+          tls_cert_secret_name: 1es-io-tls-cert
