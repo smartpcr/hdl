@@ -22,7 +22,7 @@ spec:
             image: "xiaodolibedrockacr.azurecr.io/product-catalog-sync-job:585213"
             env:
               - name: "ASPNETCORE_ENVIRONMENT"
-                value: "Development"
+                value: "Integration"
               - name: "TENANT"
                 value: ""
               - name: "ROLE"

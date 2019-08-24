@@ -71,7 +71,7 @@ spec:
           protocol: TCP
         env:
           - name: "ASPNETCORE_ENVIRONMENT"
-            value: "Development"
+            value: "Integration"
           - name: "TENANT"
             value: ""
           - name: "ROLE"

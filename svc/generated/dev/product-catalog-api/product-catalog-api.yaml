@@ -68,7 +68,7 @@ spec:
             timeoutSeconds: 10
           env:
             - name: "ASPNETCORE_ENVIRONMENT"
-              value: "Development"
+              value: "Integration"
             - name: "TENANT"
               value: ""
             - name: "ROLE"
