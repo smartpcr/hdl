@@ -11,8 +11,8 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "product-catalog-web-space-westus2.{{ .Values.dns.domain }}"
-        secretName: "{{ .Values.dns.sslCert }}"
+      - "product-catalog-web-space-westus2.{{ .Values.dns.domain }}"
+      secretName: "{{ .Values.dns.sslCert }}"
     rules:
       - host: "product-catalog-web-space-westus2.{{ .Values.dns.domain }}"
         http:

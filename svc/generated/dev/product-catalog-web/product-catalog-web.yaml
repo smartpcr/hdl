@@ -92,8 +92,8 @@ metadata:
 spec:
   tls:
     - hosts:
-        - "product-catalog-web-space-westus2.1es.io"
-        secretName: "sslcert-1es-io"
+      - "product-catalog-web-space-westus2.1es.io"
+      secretName: "sslcert-1es-io"
     rules:
       - host: "product-catalog-web-space-westus2.1es.io"
         http:
