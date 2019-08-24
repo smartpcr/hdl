@@ -1,0 +1,8 @@
+image:
+  repository: oneesdevacr.azurecr.io
+  name: 1es/product-catalog-sync-job
+  tag: 370656
+env:
+  ASPNETCORE_ENVIRONMENT: Integration
+  TENANT: onees-dev
+  ROLE: product-catalog-api

@@ -1,0 +1,23 @@
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: product-catalog-web
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+    - hosts:
+        - "product-catalog-web-space-westus2.{{ .Values.dns.domain }}"
+        secretName: "{{ .Values.dns.sslCert }}"
+    rules:
+      - host: "product-catalog-web-space-westus2.{{ .Values.dns.domain }}"
+        http:
+          paths:
+          - path: "/"
+            backend:
+              serviceName: "product-catalog-web"
+              servicePort: 443

@@ -1,0 +1,33 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: product-catalog-sync-job
+spec:
+  concurrencyPolicy: "Forbid"
+  schedule: "45 */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: product-sync-job
+            image: "{{.Values.acr.name}}.azurecr.io/{{.Values.image.name}}:{{ .Values.image.tag }}"
+            env:
+              - name: "ASPNETCORE_ENVIRONMENT"
+                value: "{{.Values.env.ASPNETCORE_ENVIRONMENT}}"
+              - name: "TENANT"
+                value: "{{.Values.env.tenant}}"
+              - name: "ROLE"
+                value: "{{.Values.env.role}}"
+            resources:
+              requests:
+                memory: "1600Mi"
+                cpu: "0.5"
+              limits:
+                memory: "2000Mi"
+                cpu: "1"
+            securityContext:
+              capabilities:
+                drop:
+                - all

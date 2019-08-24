@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: product-catalog-api
-          image: "oneesdevacr.azurecr.io/1es/product-catalog-api:{{ .Values.image.tag }}"
+          image: "{{.Values.acr.name}}.azurecr.io/{{.Values.image.name}}:{{ .Values.image.tag }}"
           resources:
             requests:
               memory: "200Mi"
@@ -48,9 +48,9 @@ spec:
           env:
             - name: "ASPNETCORE_ENVIRONMENT"
               value: "{{.Values.env.ASPNETCORE_ENVIRONMENT}}"
-            - name: "tenant"
+            - name: "TENANT"
               value: "{{.Values.env.tenant}}"
-            - name: "role"
+            - name: "ROLE"
               value: "{{.Values.env.role}}"
           ports:
           - containerPort: 6001

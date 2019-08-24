@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-catalog-web
+  labels:
+    app: product-catalog-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: product-catalog-web
+  template:
+    metadata:
+      labels:
+        app: product-catalog-web
+    spec:
+      containers:
+      - name: product-catalog-web
+        image: "{{.Values.acr.name}}.azurecr.io/{{.Values.image.name}}:{{ .Values.image.tag }}"
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "100m"
+          limits:
+            memory: "800Mi"
+            cpu: "500m"
+        securityContext:
+          capabilities:
+            drop:
+            - all
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 6002
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 6002
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+        ports:
+        - containerPort: 6002
+          protocol: TCP
+        env:
+          - name: "ASPNETCORE_ENVIRONMENT"
+            value: "{{.Values.env.ASPNETCORE_ENVIRONMENT}}"
+          - name: "TENANT"
+            value: "{{.Values.env.tenant}}"
+          - name: "ROLE"
+            value: "{{.Values.env.role}}"

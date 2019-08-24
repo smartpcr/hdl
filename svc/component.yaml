@@ -2,3 +2,7 @@ name: services
 subcomponents:
   - name: product-catalog-api
     source: "./components/product-catalog-api"
+  - name: product-catalog-sync-job
+    source: "./components/product-catalog-sync-job"
+  - name: product-catalog-web
+    source: "./components/product-catalog-web"
