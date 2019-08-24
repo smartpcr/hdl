@@ -11,7 +11,7 @@ subcomponents:
         domain: 1es.io
         sslCert: sslcert-1es-io
       env:
-        ASPNETCORE_ENVIRONMENT: Development
+        ASPNETCORE_ENVIRONMENT: Integration
         ROLE: Development
   product-catalog-sync-job:
     config:
@@ -21,7 +21,7 @@ subcomponents:
         name: product-catalog-sync-job
         tag: "585213"
       env:
-        ASPNETCORE_ENVIRONMENT: Development
+        ASPNETCORE_ENVIRONMENT: Integration
         ROLE: Development
   product-catalog-web:
     config:
@@ -34,5 +34,15 @@ subcomponents:
         domain: 1es.io
         sslCert: sslcert-1es-io
       env:
-        ASPNETCORE_ENVIRONMENT: Development
+        ASPNETCORE_ENVIRONMENT: Integration
+        ROLE: Development
+  secret-broker:
+    config:
+      acr:
+        name: xiaodolibedrockacr
+      image:
+        name: secret-broker
+        tag: "720313"
+      env:
+        ASPNETCORE_ENVIRONMENT: Integration
         ROLE: Development
