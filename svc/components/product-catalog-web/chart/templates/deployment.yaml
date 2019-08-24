@@ -5,6 +5,9 @@ metadata:
   name: product-catalog-web
   labels:
     app: product-catalog-web
+    {{if .Values.usePodIdentity}}
+    aadpodidbinding: {{.Values.podIdentity}}
+    {{end}}
   annotations:
     flux.weave.works/automated: "true"
     flux.weave.works/tag.k8s-mon: "glob:master-*"
@@ -17,6 +20,9 @@ spec:
     metadata:
       labels:
         app: product-catalog-web
+        {{if .Values.usePodIdentity}}
+        aadpodidbinding: {{.Values.podIdentity}}
+        {{end}}
     spec:
       containers:
       - name: product-catalog-web

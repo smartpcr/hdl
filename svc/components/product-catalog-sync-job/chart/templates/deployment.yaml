@@ -4,6 +4,9 @@ metadata:
   name: product-catalog-sync-job
   labels:
     app: product-catalog-sync-job
+    {{if .Values.usePodIdentity}}
+    aadpodidbinding: {{.Values.podIdentity}}
+    {{end}}
   annotations:
     flux.weave.works/automated: "true"
     flux.weave.works/tag.k8s-mon: "glob:master-*"
@@ -13,6 +16,13 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          name: product-catalog-sync-job
+          labels:
+            app: product-catalog-sync-job
+            {{if .Values.usePodIdentity}}
+            aadpodidbinding: {{.Values.podIdentity}}
+            {{end}}
         spec:
           restartPolicy: Never
           containers:
