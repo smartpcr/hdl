@@ -91,14 +91,14 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   tls:
-    - hosts:
-      - "product-catalog-web-space-westus2.1es.io"
-      secretName: "sslcert-1es-io"
-    rules:
-      - host: "product-catalog-web-space-westus2.1es.io"
-        http:
-          paths:
-          - path: "/"
-            backend:
-              serviceName: "product-catalog-web"
-              servicePort: 443
+  - hosts:
+    - "product-catalog-web-space-westus2.1es.io"
+    secretName: "sslcert-1es-io"
+  rules:
+    - host: "product-catalog-web-space-westus2.1es.io"
+      http:
+        paths:
+        - path: "/"
+          backend:
+            serviceName: "product-catalog-web"
+            servicePort: 443
