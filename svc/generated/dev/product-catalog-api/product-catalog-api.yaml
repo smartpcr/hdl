@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
         - name: product-catalog-api
-          image: "oneesdevacr.azurecr.io/1es/product-catalog-api:201908081234"
+          image: "xiaodolibedrockacr.azurecr.io/product-catalog-api:370656"
           resources:
             requests:
               memory: "200Mi"
@@ -65,11 +65,11 @@ spec:
             timeoutSeconds: 10
           env:
             - name: "ASPNETCORE_ENVIRONMENT"
-              value: "Integration"
-            - name: "tenant"
-              value: "onees-dev"
-            - name: "role"
-              value: "Integration"
+              value: "Development"
+            - name: "TENANT"
+              value: ""
+            - name: "ROLE"
+              value: ""
           ports:
           - containerPort: 6001
             protocol: TCP
@@ -92,10 +92,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - "product-catalog-api-space-westus2.xiaodong.world"
-    secretName: "sslcert-dev-xiaodong-world"
+    - "product-catalog-api-space-westus2.1es.io"
+    secretName: "sslcert-1es-io"
   rules:
-  - host: "product-catalog-api-space-westus2.xiaodong.world"
+  - host: "product-catalog-api-space-westus2.1es.io"
     http:
       paths:
       - path: "/"

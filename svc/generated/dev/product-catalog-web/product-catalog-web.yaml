@@ -1,0 +1,101 @@
+---
+# Source: chart/templates/service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-catalog-web
+  namespace: default
+spec:
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 6002
+    name: "product-catalog-web-https"
+  selector:
+    app: product-catalog-web
+---
+# Source: chart/templates/deployment.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-catalog-web
+  labels:
+    app: product-catalog-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: product-catalog-web
+  template:
+    metadata:
+      labels:
+        app: product-catalog-web
+    spec:
+      containers:
+      - name: product-catalog-web
+        image: "xiaodolibedrockacr.azurecr.io/product-catalog-web:373647"
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "100m"
+          limits:
+            memory: "800Mi"
+            cpu: "500m"
+        securityContext:
+          capabilities:
+            drop:
+            - all
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 6002
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 6002
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 10
+        ports:
+        - containerPort: 6002
+          protocol: TCP
+        env:
+          - name: "ASPNETCORE_ENVIRONMENT"
+            value: "Development"
+          - name: "TENANT"
+            value: ""
+          - name: "ROLE"
+            value: ""
+
+---
+# Source: chart/templates/ingress.yaml
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: product-catalog-web
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+    - hosts:
+        - "product-catalog-web-space-westus2.1es.io"
+        secretName: "sslcert-1es-io"
+    rules:
+      - host: "product-catalog-web-space-westus2.1es.io"
+        http:
+          paths:
+          - path: "/"
+            backend:
+              serviceName: "product-catalog-web"
+              servicePort: 443

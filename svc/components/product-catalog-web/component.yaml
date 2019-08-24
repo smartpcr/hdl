@@ -1,0 +1,4 @@
+name: product-catalog-web
+generator: "helm"
+type: helm
+path: "./chart"

@@ -1,0 +1,36 @@
+---
+# Source: chart/templates/deployment.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: product-catalog-sync-job
+spec:
+  concurrencyPolicy: "Forbid"
+  schedule: "45 */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: product-sync-job
+            image: "xiaodolibedrockacr.azurecr.io/1es/product-catalog-sync-job:585213"
+            env:
+              - name: "ASPNETCORE_ENVIRONMENT"
+                value: "Development"
+              - name: "TENANT"
+                value: ""
+              - name: "ROLE"
+                value: ""
+            resources:
+              requests:
+                memory: "1600Mi"
+                cpu: "0.5"
+              limits:
+                memory: "2000Mi"
+                cpu: "1"
+            securityContext:
+              capabilities:
+                drop:
+                - all
+
