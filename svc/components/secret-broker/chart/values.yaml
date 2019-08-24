@@ -1,0 +1,7 @@
+image:
+  name: secret-broker
+  tag: 720313
+env:
+  ASPNETCORE_ENVIRONMENT: Development
+  TENANT: onees-dev
+  ROLE: secret-broker

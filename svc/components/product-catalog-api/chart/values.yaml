@@ -1,6 +1,5 @@
 image:
-  repository: oneesdevacr.azurecr.io
-  name: 1es/product-catalog-api
+  name: product-catalog-api
   tag: 370656
 env:
   ASPNETCORE_ENVIRONMENT: Development

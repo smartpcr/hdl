@@ -1,0 +1,4 @@
+name: secret-broker
+generator: "helm"
+type: helm
+path: "./chart"

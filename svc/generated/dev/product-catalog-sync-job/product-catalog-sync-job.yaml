@@ -19,7 +19,7 @@ spec:
           restartPolicy: Never
           containers:
           - name: product-sync-job
-            image: "xiaodolibedrockacr.azurecr.io/1es/product-catalog-sync-job:585213"
+            image: "xiaodolibedrockacr.azurecr.io/product-catalog-sync-job:585213"
             env:
               - name: "ASPNETCORE_ENVIRONMENT"
                 value: "Development"

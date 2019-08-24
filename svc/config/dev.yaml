@@ -4,35 +4,35 @@ subcomponents:
     config:
       acr:
         name: xiaodolibedrockacr
-      env:
-        ASPNETCORE_ENVIRONMENT: Development
-        ROLE: Development
       image:
         name: product-catalog-api
         tag: "370656"
       dns:
         domain: 1es.io
         sslCert: sslcert-1es-io
-  product-catalog-sync-job:
-    config:
-      acr:
-        name: product-catalog-sync-job
-        name: xiaodolibedrockacr
       env:
         ASPNETCORE_ENVIRONMENT: Development
         ROLE: Development
+  product-catalog-sync-job:
+    config:
+      acr:
+        name: xiaodolibedrockacr
       image:
+        name: product-catalog-sync-job
         tag: "585213"
+      env:
+        ASPNETCORE_ENVIRONMENT: Development
+        ROLE: Development
   product-catalog-web:
     config:
       acr:
         name: xiaodolibedrockacr
-      env:
-        ASPNETCORE_ENVIRONMENT: Development
-        ROLE: Development
       image:
         name: product-catalog-web
         tag: "373647"
       dns:
         domain: 1es.io
         sslCert: sslcert-1es-io
+      env:
+        ASPNETCORE_ENVIRONMENT: Development
+        ROLE: Development

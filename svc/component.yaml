@@ -6,3 +6,5 @@ subcomponents:
     source: "./components/product-catalog-sync-job"
   - name: product-catalog-web
     source: "./components/product-catalog-web"
+  - name: secret-broker
+    source: "./components/secret-broker"
