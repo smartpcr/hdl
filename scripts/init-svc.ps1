@@ -1,4 +1,8 @@
 
+param(
+    [string]$EnvName="dev"
+)
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
@@ -10,7 +14,7 @@ $svcFolder = Join-Path $gitRootFolder "svc"
 
 Set-Location $svcFolder
 fab install
-fab generate dev
+fab generate $EnvName
 
 
 Set-Location $gitRootFolder

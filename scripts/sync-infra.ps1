@@ -1,5 +1,6 @@
 param(
-    [string]$GitOpsRepoFolder = "../git-deploy"
+    [array]$GitOpsRepoFolders = @("../git-deploy", "../../../my/git-deploy", "../../../sace"),
+    [string]$Comments = "sync services"
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,10 +31,14 @@ if (Test-Path (Join-Path $infraFolder "config")) {
     Copy-Item -Path (Join-Path $infraFolder "config") -Destination (Join-Path $GitOpsRepoFolder "infra") -Force -Recurse
 }
 
-Set-Location $GitOpsRepoFolder
-git add .
-git commit -m "audo sync"
-git pull
-git push
+$GitOpsRepoFolders | ForEach-Object {
+    $GitOpsRepoFolder = $_
+    Set-Location $GitOpsRepoFolder
 
-Set-Location $gitRootFolder
+    git add .
+    git commit -m $Comments
+    git pull
+    git push
+
+    Set-Location $gitRootFolder
+}

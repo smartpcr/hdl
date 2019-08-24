@@ -1,4 +1,8 @@
 
+param(
+    [string]$EnvName = "dev"
+)
+
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
@@ -12,6 +16,6 @@ $infraFolder = Join-Path $gitRootFolder "infra"
 Set-Location $infraFolder
 fab install
 # add modification here
-fab generate dev
+fab generate $EnvName
 
 Set-Location $gitRootFolder
