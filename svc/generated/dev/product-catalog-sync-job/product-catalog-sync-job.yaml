@@ -4,6 +4,11 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: product-catalog-sync-job
+  labels:
+    app: product-catalog-sync-job
+  annotations:
+    flux.weave.works/automated: "true"
+    flux.weave.works/tag.k8s-mon: "glob:master-*"
 spec:
   concurrencyPolicy: "Forbid"
   schedule: "45 */1 * * *"
