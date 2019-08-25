@@ -73,11 +73,13 @@ spec:
           protocol: TCP
         env:
           - name: "ASPNETCORE_ENVIRONMENT"
-            value: "Development"
+            value: "Integration"
           - name: "TENANT"
-            value: ""
+            value: "onees"
           - name: "ROLE"
-            value: ""
+            value: "product-catalog-web"
+          - name: DEPLOYMENT_UNIT
+            value: "sace-bedrock-kv"
 
 ---
 # Source: chart/templates/ingress.yaml

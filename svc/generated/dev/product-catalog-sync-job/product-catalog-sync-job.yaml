@@ -28,11 +28,13 @@ spec:
             image: "sacebedrockacr.azurecr.io/product-catalog-sync-job:585213"
             env:
               - name: "ASPNETCORE_ENVIRONMENT"
-                value: "Development"
+                value: "Integration"
               - name: "TENANT"
-                value: ""
+                value: "onees"
               - name: "ROLE"
-                value: ""
+                value: "product-catalog-sync-job"
+              - name: DEPLOYMENT_UNIT
+                value: "sace-bedrock-kv"
             resources:
               requests:
                 memory: "1600Mi"

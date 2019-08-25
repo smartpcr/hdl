@@ -70,11 +70,13 @@ spec:
             timeoutSeconds: 10
           env:
             - name: "ASPNETCORE_ENVIRONMENT"
-              value: "Development"
+              value: "Integration"
             - name: "TENANT"
-              value: ""
+              value: "onees"
             - name: "ROLE"
-              value: ""
+              value: "product-catalog-api"
+            - name: DEPLOYMENT_UNIT
+              value: "sace-bedrock-kv"
           ports:
           - containerPort: 6001
             protocol: TCP
