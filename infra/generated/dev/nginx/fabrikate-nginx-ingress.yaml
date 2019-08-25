@@ -289,6 +289,9 @@ spec:
   template:
     metadata:
       annotations:
+        nginx.ingress.kubernetes.io/proxy-connect-timeout: "120"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
         prometheus.io/port: "10254"
         prometheus.io/scrape: "true"
       labels:
