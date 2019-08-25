@@ -70,5 +70,5 @@ subcomponents:
     injectNamespace: true
 
   nginx:
-    namespace: nginx
+    namespace: ingress-nginx
     injectNamespace: true
