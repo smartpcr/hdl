@@ -8,7 +8,7 @@ subcomponents:
         name: product-catalog-api
         tag: "370656"
       dns:
-        domain: 1es.io
+        domain: aks.run
         sslCert: sslcert-aks-run
       env:
         ASPNETCORE_ENVIRONMENT: Integration
@@ -35,7 +35,7 @@ subcomponents:
         name: product-catalog-web
         tag: "373647"
       dns:
-        domain: 1es.io
+        domain: aks.run
         sslCert: sslcert-aks-run
       env:
         ASPNETCORE_ENVIRONMENT: Integration

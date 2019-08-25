@@ -95,10 +95,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - "product-catalog-api-space-westus2.1es.io"
-    secretName: "sslcert-1es-io"
+    - "product-catalog-api-space-westus2.aks.run"
+    secretName: "sslcert-aks-run"
   rules:
-  - host: "product-catalog-api-space-westus2.1es.io"
+  - host: "product-catalog-api-space-westus2.aks.run"
     http:
       paths:
       - path: "/"
