@@ -22146,7 +22146,7 @@ spec:
   tls:
   - hosts:
     - grafana-space-westus2.xiaodong.cloud
-    secretName: sslcert-aks-run
+    secretName: sslcert-dev-xiaodong-cloud
 
 ---
 apiVersion: extensions/v1beta1
@@ -22174,7 +22174,7 @@ spec:
   tls:
   - hosts:
     - alertmanager-space-westus2.xiaodong.cloud
-    secretName: sslcert-aks-run
+    secretName: sslcert-dev-xiaodong-cloud
 
 ---
 apiVersion: extensions/v1beta1
@@ -22202,7 +22202,7 @@ spec:
   tls:
   - hosts:
     - prometheus-space-westus2.xiaodong.cloud
-    secretName: sslcert-aks-run
+    secretName: sslcert-dev-xiaodong-cloud
 
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -24115,3 +24115,4 @@ webhooks:
     - UPDATE
     resources:
     - prometheusrules
+
