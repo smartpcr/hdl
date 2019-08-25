@@ -22136,7 +22136,7 @@ metadata:
   namespace: monitoring
 spec:
   rules:
-  - host: grafana-space-westus2.xiaodong.cloud
+  - host: grafana-space-westus2.aks.run
     http:
       paths:
       - backend:
@@ -22145,7 +22145,7 @@ spec:
         path: /
   tls:
   - hosts:
-    - grafana-space-westus2.xiaodong.cloud
+    - grafana-space-westus2.aks.run
     secretName: sslcert-aks-run
 
 ---
@@ -22164,7 +22164,7 @@ metadata:
   namespace: monitoring
 spec:
   rules:
-  - host: alertmanager-space-westus2.xiaodong.cloud
+  - host: alertmanager-space-westus2.aks.run
     http:
       paths:
       - backend:
@@ -22173,7 +22173,7 @@ spec:
         path: /
   tls:
   - hosts:
-    - alertmanager-space-westus2.xiaodong.cloud
+    - alertmanager-space-westus2.aks.run
     secretName: sslcert-aks-run
 
 ---
@@ -22192,7 +22192,7 @@ metadata:
   namespace: monitoring
 spec:
   rules:
-  - host: prometheus-space-westus2.xiaodong.cloud
+  - host: prometheus-space-westus2.aks.run
     http:
       paths:
       - backend:
@@ -22201,7 +22201,7 @@ spec:
         path: /
   tls:
   - hosts:
-    - prometheus-space-westus2.xiaodong.cloud
+    - prometheus-space-westus2.aks.run
     secretName: sslcert-aks-run
 
 ---
@@ -22217,7 +22217,7 @@ metadata:
   namespace: monitoring
 spec:
   baseImage: quay.io/prometheus/alertmanager
-  externalUrl: http://alertmanager-space-westus2.xiaodong.cloud/
+  externalUrl: http://alertmanager-space-westus2.aks.run/
   listenLocal: false
   logFormat: logfmt
   logLevel: debug
@@ -22290,7 +22290,7 @@ spec:
       port: web
   baseImage: quay.io/prometheus/prometheus
   enableAdminAPI: false
-  externalUrl: http://prometheus-space-westus2.xiaodong.cloud/
+  externalUrl: http://prometheus-space-westus2.aks.run/
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -24115,4 +24115,3 @@ webhooks:
     - UPDATE
     resources:
     - prometheusrules
-

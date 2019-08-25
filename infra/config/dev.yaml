@@ -21,31 +21,31 @@ subcomponents:
       alertmanager:
         ingress:
           hosts:
-            - "alertmanager-space-westus2.xiaodong.cloud"
+            - "alertmanager-space-westus2.aks.run"
           tls:
             - secretName: "sslcert-aks-run"
               hosts:
-                - "alertmanager-space-westus2.xiaodong.cloud"
+                - "alertmanager-space-westus2.aks.run"
 
       prometheus:
         ingress:
           hosts:
-            - "prometheus-space-westus2.xiaodong.cloud"
+            - "prometheus-space-westus2.aks.run"
           tls:
             - secretName: "sslcert-aks-run"
               hosts:
-                - "prometheus-space-westus2.xiaodong.cloud"
+                - "prometheus-space-westus2.aks.run"
 
       grafana:
         adminUser: "admin"
         adminPassword: "grafana"
         ingress:
           hosts:
-            - "grafana-space-westus2.xiaodong.cloud"
+            - "grafana-space-westus2.aks.run"
           tls:
             - secretName: "sslcert-aks-run"
               hosts:
-                - "grafana-space-westus2.xiaodong.cloud"
+                - "grafana-space-westus2.aks.run"
 
   external-dns:
     config:
