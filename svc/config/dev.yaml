@@ -11,8 +11,9 @@ subcomponents:
         domain: aks.run
         sslCert: sslcert-aks-run
       env:
-        ASPNETCORE_ENVIRONMENT: Development
-        ROLE: Development
+        ASPNETCORE_ENVIRONMENT: Integration
+        TENANT: onees
+        DEPLOYMENT_UNIT: sace-bedrock-kv # used as vault name
       usePodIdentity: true
       podIdentity: xiaodoli-bedrock-kv-reader
   product-catalog-sync-job:
@@ -23,8 +24,9 @@ subcomponents:
         name: product-catalog-sync-job
         tag: "585213"
       env:
-        ASPNETCORE_ENVIRONMENT: Development
-        ROLE: Development
+        ASPNETCORE_ENVIRONMENT: Integration
+        TENANT: onees
+        DEPLOYMENT_UNIT: sace-bedrock-kv # used as vault name
       usePodIdentity: true
       podIdentity: xiaodoli-bedrock-kv-reader
   product-catalog-web:
@@ -38,8 +40,9 @@ subcomponents:
         domain: aks.run
         sslCert: sslcert-aks-run
       env:
-        ASPNETCORE_ENVIRONMENT: Development
-        ROLE: Development
+        ASPNETCORE_ENVIRONMENT: Integration
+        TENANT: onees
+        DEPLOYMENT_UNIT: sace-bedrock-kv # used as vault name
       usePodIdentity: true
       podIdentity: xiaodoli-bedrock-kv-reader
   secret-broker:
@@ -50,5 +53,4 @@ subcomponents:
         name: secret-broker
         tag: "720313"
       env:
-        ASPNETCORE_ENVIRONMENT: Development
-        ROLE: Development
+        ASPNETCORE_ENVIRONMENT: Integration

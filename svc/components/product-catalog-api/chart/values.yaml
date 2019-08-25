@@ -2,8 +2,6 @@ image:
   name: product-catalog-api
   tag: 370656
 env:
-  ASPNETCORE_ENVIRONMENT: Development
-  TENANT: onees-dev
   ROLE: product-catalog-api
 dns:
   domain: aks.run

@@ -61,6 +61,8 @@ spec:
           - name: "ASPNETCORE_ENVIRONMENT"
             value: "{{.Values.env.ASPNETCORE_ENVIRONMENT}}"
           - name: "TENANT"
-            value: "{{.Values.env.tenant}}"
+            value: "{{.Values.env.TENANT}}"
           - name: "ROLE"
-            value: "{{.Values.env.role}}"
+            value: "{{.Values.env.ROLE}}"
+          - name: DEPLOYMENT_UNIT
+            value: "{{.Values.env.DEPLOYMENT_UNIT}}"
