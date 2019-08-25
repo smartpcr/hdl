@@ -3,7 +3,7 @@ subcomponents:
   product-catalog-api:
     config:
       acr:
-        name: xiaodolibedrockacr
+        name: sacebedrockacr
       image:
         name: product-catalog-api
         tag: "370656"
@@ -18,7 +18,7 @@ subcomponents:
   product-catalog-sync-job:
     config:
       acr:
-        name: xiaodolibedrockacr
+        name: sacebedrockacr
       image:
         name: product-catalog-sync-job
         tag: "585213"
@@ -30,7 +30,7 @@ subcomponents:
   product-catalog-web:
     config:
       acr:
-        name: xiaodolibedrockacr
+        name: sacebedrockacr
       image:
         name: product-catalog-web
         tag: "373647"
@@ -45,7 +45,7 @@ subcomponents:
   secret-broker:
     config:
       acr:
-        name: xiaodolibedrockacr
+        name: sacebedrockacr
       image:
         name: secret-broker
         tag: "720313"

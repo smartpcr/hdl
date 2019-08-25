@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
         - name: product-catalog-api
-          image: "xiaodolibedrockacr.azurecr.io/product-catalog-api:370656"
+          image: "sacebedrockacr.azurecr.io/product-catalog-api:370656"
           resources:
             requests:
               memory: "200Mi"
