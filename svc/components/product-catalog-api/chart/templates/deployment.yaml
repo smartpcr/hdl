@@ -5,9 +5,9 @@ metadata:
   name: product-catalog-api
   labels:
     app: product-catalog-api
-    {{if .Values.usePodIdentity}}
+    {{- if .Values.usePodIdentity}}
     aadpodidbinding: {{.Values.podIdentity}}
-    {{end}}
+    {{- end}}
   annotations:
     flux.weave.works/automated: "true"
     flux.weave.works/tag.k8s-mon: "glob:master-*"
@@ -16,9 +16,9 @@ spec:
   selector:
     matchLabels:
       app: product-catalog-api
-      {{if .Values.usePodIdentity}}
+      {{- if .Values.usePodIdentity}}
       aadpodidbinding: {{.Values.podIdentity}}
-      {{end}}
+      {{- end}}
   template:
     metadata:
       labels:

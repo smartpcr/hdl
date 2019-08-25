@@ -23,6 +23,7 @@ metadata:
   name: product-catalog-web
   labels:
     app: product-catalog-web
+    aadpodidbinding: xiaodoli-bedrock-kv-reader
   annotations:
     flux.weave.works/automated: "true"
     flux.weave.works/tag.k8s-mon: "glob:master-*"
@@ -35,6 +36,7 @@ spec:
     metadata:
       labels:
         app: product-catalog-web
+        aadpodidbinding: xiaodoli-bedrock-kv-reader
     spec:
       containers:
       - name: product-catalog-web
@@ -71,7 +73,7 @@ spec:
           protocol: TCP
         env:
           - name: "ASPNETCORE_ENVIRONMENT"
-            value: "Integration"
+            value: "Development"
           - name: "TENANT"
             value: ""
           - name: "ROLE"
