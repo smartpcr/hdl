@@ -4,7 +4,7 @@ apiVersion: spv.no/v1alpha1
 kind: AzureKeyVaultSecret
 metadata:
   name: acr-auth
-  namespace: nginx
+  namespace: ingress-nginx
 spec:
   vault:
     name: compes-bedrock-kv
