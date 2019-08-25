@@ -51,7 +51,7 @@ subcomponents:
     subcomponents:
       acr-auth:
         config:
-          namespace: nginx
+          namespace: ingress-nginx
           vault_name: compes-bedrock-kv
           acr_auth_secret_name: compes-bedrock-acr-auth
       geneva-cert:
