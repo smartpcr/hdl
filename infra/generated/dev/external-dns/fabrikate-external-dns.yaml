@@ -83,13 +83,13 @@ spec:
       - args:
         - --source=service
         - --source=ingress
-        - --domain-filter=1es.io
+        - --domain-filter=aks.run
         - --provider=azure
-        - --azure-resource-group=compes-bedrock-lab
-        - --txt-owner-id=compes-bedrock-lab-westus2
+        - --azure-resource-group=sace-bedrock-lab
+        - --txt-owner-id=sace-bedrock-lab-westus2
         - --log-level=debug
         - --policy=sync
-        image: xiaodongacr.azurecr.io/external-dns:720306
+        image: sacebedrockacr.azurecr.io/external-dns:720306
         name: external-dns
         resources:
           limits:

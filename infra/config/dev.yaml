@@ -50,8 +50,13 @@ subcomponents:
   external-dns:
     config:
       acr:
-        name: xiaodongacr
+        name: sacebedrockacr
       dns:
         image:
           name: external-dns
           tag: 720306
+
+  nginx:
+    config:
+      aks:
+        fqdn: bedrock-lab-102dc1b5.hcp.westus2.azmk8s.io
