@@ -13,8 +13,7 @@ while ((-not (Test-Path (Join-Path $gitRootFolder ".git"))) -and (-not $gitRootF
 }
 
 $GitOpsRepoFolders | ForEach-Object {
-    $GitOpsRepoFolder = Join-Path $gitRootFolder $_
-
+    $GitOpsRepoFolder = $_
     $GitOpsRepoFolder = Join-Path $gitRootFolder $GitOpsRepoFolder
     $svcFolder = Join-Path $gitRootFolder "svc"
 
