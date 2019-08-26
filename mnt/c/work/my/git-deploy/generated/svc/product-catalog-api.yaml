@@ -1,0 +1,111 @@
+---
+# Source: chart/templates/service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "product-catalog-api"
+  namespace: default
+spec:
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 6001
+    name: "product-catalog-api-https"
+  selector:
+    app: "product-catalog-api"
+---
+# Source: chart/templates/deployment.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-catalog-api
+  labels:
+    app: product-catalog-api
+    aadpodidbinding: xiaodoli-bedrock-kv-reader
+  annotations:
+    flux.weave.works/automated: "true"
+    flux.weave.works/tag.k8s-mon: "glob:master-*"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: product-catalog-api
+      aadpodidbinding: xiaodoli-bedrock-kv-reader
+  template:
+    metadata:
+      labels:
+        app: product-catalog-api
+    spec:
+      containers:
+        - name: product-catalog-api
+          image: "sacebedrockacr.azurecr.io/product-catalog-api:370656"
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "100m"
+            limits:
+              memory: "800Mi"
+              cpu: "750m"
+          securityContext:
+            capabilities:
+              drop:
+              - all
+          livenessProbe:
+            httpGet:
+              path: "/status"
+              port: 6001
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: "/status"
+              port: 6001
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 10
+          env:
+            - name: "ASPNETCORE_ENVIRONMENT"
+              value: "Integration"
+            - name: "TENANT"
+              value: "onees"
+            - name: "ROLE"
+              value: "product-catalog-api"
+            - name: DEPLOYMENT_UNIT
+              value: "sace-bedrock-kv"
+          ports:
+          - containerPort: 6001
+            protocol: TCP
+
+      imagePullSecrets:
+        - name: acr-auth
+
+---
+# Source: chart/templates/ingress.yaml
+---
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: "product-catalog-api"
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+  - hosts:
+    - "product-catalog-api-space-westus2.aks.run"
+    secretName: "sslcert-aks-run"
+  rules:
+  - host: "product-catalog-api-space-westus2.aks.run"
+    http:
+      paths:
+      - path: "/"
+        backend:
+          serviceName: "product-catalog-api"
+          servicePort: 443
