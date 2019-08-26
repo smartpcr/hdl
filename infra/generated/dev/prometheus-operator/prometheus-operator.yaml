@@ -23974,21 +23974,11 @@ metadata:
   namespace: monitoring
 spec:
   endpoints:
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    honorLabels: true
-    port: https-metrics
-    scheme: https
-    tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      insecureSkipVerify: true
-  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    honorLabels: true
+  - honorLabels: true
+    port: http-metrics
+  - honorLabels: true
     path: /metrics/cadvisor
-    port: https-metrics
-    scheme: https
-    tlsConfig:
-      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      insecureSkipVerify: true
+    port: http-metrics
   jobLabel: k8s-app
   namespaceSelector:
     matchNames:
