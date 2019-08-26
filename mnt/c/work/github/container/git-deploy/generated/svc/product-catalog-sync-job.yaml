@@ -1,0 +1,49 @@
+---
+# Source: chart/templates/deployment.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: product-catalog-sync-job
+  labels:
+    app: product-catalog-sync-job
+    aadpodidbinding: xiaodoli-bedrock-kv-reader
+  annotations:
+    flux.weave.works/automated: "true"
+    flux.weave.works/tag.k8s-mon: "glob:master-*"
+spec:
+  concurrencyPolicy: "Forbid"
+  schedule: "45 */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: product-catalog-sync-job
+          labels:
+            app: product-catalog-sync-job
+            aadpodidbinding: xiaodoli-bedrock-kv-reader
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: product-sync-job
+            image: "sacebedrockacr.azurecr.io/product-catalog-sync-job:585213"
+            env:
+              - name: "ASPNETCORE_ENVIRONMENT"
+                value: "Integration"
+              - name: "TENANT"
+                value: "onees"
+              - name: "ROLE"
+                value: "product-catalog-sync-job"
+              - name: DEPLOYMENT_UNIT
+                value: "sace-bedrock-kv"
+            resources:
+              requests:
+                memory: "1600Mi"
+                cpu: "0.5"
+              limits:
+                memory: "2000Mi"
+                cpu: "1"
+            securityContext:
+              capabilities:
+                drop:
+                - all
+

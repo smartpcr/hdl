@@ -1,0 +1,54 @@
+config:
+subcomponents:
+  product-catalog-api:
+    config:
+      acr:
+        name: sacebedrockacr
+      image:
+        name: product-catalog-api
+        tag: "370656"
+      dns:
+        domain: aks.run
+        sslCert: sslcert-aks-run
+      env:
+        ASPNETCORE_ENVIRONMENT: Integration
+        ROLE: Integration
+      usePodIdentity: true
+      podIdentity: sace-bedrock-kv-reader
+  product-catalog-sync-job:
+    config:
+      acr:
+        name: sacebedrockacr
+      image:
+        name: product-catalog-sync-job
+        tag: "585213"
+      env:
+        ASPNETCORE_ENVIRONMENT: Integration
+        ROLE: Integration
+      usePodIdentity: true
+      podIdentity: sace-bedrock-kv-reader
+  product-catalog-web:
+    config:
+      acr:
+        name: sacebedrockacr
+      image:
+        name: product-catalog-web
+        tag: "373647"
+      dns:
+        domain: aks.run
+        sslCert: sslcert-aks-run
+      env:
+        ASPNETCORE_ENVIRONMENT: Integration
+        ROLE: Integration
+      usePodIdentity: true
+      podIdentity: sace-bedrock-kv-reader
+  secret-broker:
+    config:
+      acr:
+        name: sacebedrockacr
+      image:
+        name: secret-broker
+        tag: "720313"
+      env:
+        ASPNETCORE_ENVIRONMENT: Integration
+        ROLE: Integration
