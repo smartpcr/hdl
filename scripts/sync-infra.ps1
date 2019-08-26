@@ -1,5 +1,5 @@
 param(
-    [array]$GitOpsRepoFolders = @("../git-deploy", "../../../my/git-deploy", "../../../sace"),
+    [string[]]$GitOpsRepoFolders = @("../git-deploy", "../../../my/git-deploy", "../../../sace"),
     [string]$Comments = "sync infra"
 )
 
@@ -12,11 +12,11 @@ while ((-not (Test-Path (Join-Path $gitRootFolder ".git"))) -and (-not $gitRootF
 }
 
 $GitOpsRepoFolders | ForEach-Object {
-    $GitOpsRepoFolder = $_
-    $GitOpsRepoFolder = Join-Path $gitRootFolder $GitOpsRepoFolder
+    $GitOpsRepoFolder = Join-Path $gitRootFolder $_
     $infraFolder = Join-Path $gitRootFolder "infra"
 
     Write-Host "sync infra/generated"
+    New-Item (Join-Path $GitOpsRepoFolder "generated") -ItemType Directory -Force | Out-Null
     $destinationInfraFolder = Join-Path (Join-Path $GitOpsRepoFolder "generated") "infra"
     if (Test-Path $destinationInfraFolder) {
         Remove-Item $destinationInfraFolder -Recurse -Force
@@ -28,6 +28,7 @@ $GitOpsRepoFolders | ForEach-Object {
     }
 
     Write-Host "sync infra/config"
+    New-Item (Join-Path $GitOpsRepoFolder "config") -ItemType Directory -Force | Out-Null
     $destinationConfigFolder = Join-Path (Join-Path $GitOpsRepoFolder "config") "infra"
     if (Test-Path $destinationConfigFolder) {
         Remove-Item $destinationConfigFolder -Recurse -Force
