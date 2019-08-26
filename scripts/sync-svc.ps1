@@ -19,21 +19,23 @@ $GitOpsRepoFolders | ForEach-Object {
     $svcFolder = Join-Path $gitRootFolder "svc"
 
     Write-Host "sync svc/generated"
-    $destinationComponentFolder = Join-Path (Join-Path $GitOpsRepoFolder "svc") "generated"
-    if (Test-Path $destinationComponentFolder) {
-        Remove-Item $destinationComponentFolder -Recurse -Force
+    $desginationSvcFolder = Join-Path (Join-Path $GitOpsRepoFolder "generated") "svc"
+    if (Test-Path $desginationSvcFolder) {
+        Remove-Item $desginationSvcFolder -Recurse -Force
     }
-    if (Test-Path (Join-Path $svcFolder "generated")) {
-        Copy-Item -Path (Join-Path $svcFolder "generated") -Destination (Join-Path $GitOpsRepoFolder "svc") -Force -Recurse
+    $sourceSvcFolder = Join-Path $svcFolder "generated"
+    if (Test-Path $sourceSvcFolder) {
+        Get-ChildItem $sourceSvcFolder -Recurse | Copy-Item -Destination $desginationSvcFolder -Force
     }
 
-    Write-Host "sync svc/config"
-    $destinationComponentFolder = Join-Path (Join-Path $GitOpsRepoFolder "svc") "config"
-    if (Test-Path $destinationComponentFolder) {
-        Remove-Item $destinationComponentFolder -Recurse -Force
+    Write-Host "sync config/svc"
+    $desginationConfigFolder = Join-Path (Join-Path $GitOpsRepoFolder "config") "svc"
+    if (Test-Path $desginationConfigFolder) {
+        Remove-Item $desginationConfigFolder -Recurse -Force
     }
-    if (Test-Path (Join-Path $svcFolder "config")) {
-        Copy-Item -Path (Join-Path $svcFolder "config") -Destination (Join-Path $GitOpsRepoFolder "svc") -Force -Recurse
+    $sourceConfigFolder = Join-Path $svcFolder "config"
+    if (Test-Path $sourceConfigFolder) {
+        Get-ChildItem $sourceConfigFolder -Recurse | Copy-Item -Destination $desginationConfigFolder -Force
     }
 
     Set-Location $GitOpsRepoFolder

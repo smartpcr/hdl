@@ -17,21 +17,24 @@ $GitOpsRepoFolders | ForEach-Object {
     $infraFolder = Join-Path $gitRootFolder "infra"
 
     Write-Host "sync infra/generated"
-    $destinationComponentFolder = Join-Path (Join-Path $GitOpsRepoFolder "infra") "generated"
-    if (Test-Path $destinationComponentFolder) {
-        Remove-Item $destinationComponentFolder -Recurse -Force
+    $destinationInfraFolder = Join-Path (Join-Path $GitOpsRepoFolder "generated") "infra"
+    if (Test-Path $destinationInfraFolder) {
+        Remove-Item $destinationInfraFolder -Recurse -Force
     }
-    if (Test-Path (Join-Path $infraFolder "generated")) {
-        Copy-Item -Path (Join-Path $infraFolder "generated") -Destination (Join-Path $GitOpsRepoFolder "infra") -Force -Recurse
+
+    $sourceInfraFolder = Join-Path $infraFolder "generated"
+    if (Test-Path $sourceInfraFolder) {
+       Get-ChildItem $sourceInfraFolder -Recurse | Copy-Item -Destination $destinationInfraFolder -Force
     }
 
     Write-Host "sync infra/config"
-    $destinationComponentFolder = Join-Path (Join-Path $GitOpsRepoFolder "infra") "config"
-    if (Test-Path $destinationComponentFolder) {
-        Remove-Item $destinationComponentFolder -Recurse -Force
+    $destinationConfigFolder = Join-Path (Join-Path $GitOpsRepoFolder "config") "infra"
+    if (Test-Path $destinationConfigFolder) {
+        Remove-Item $destinationConfigFolder -Recurse -Force
     }
-    if (Test-Path (Join-Path $infraFolder "config")) {
-        Copy-Item -Path (Join-Path $infraFolder "config") -Destination (Join-Path $GitOpsRepoFolder "infra") -Force -Recurse
+    $sourceConfigFolder = Join-Path $infraFolder "config"
+    if (Test-Path $sourceConfigFolder) {
+        Get-ChildItem $sourceConfigFolder -Recurse | Copy-Item -Destination $destinationConfigFolder -Force
     }
 
     Set-Location $GitOpsRepoFolder
