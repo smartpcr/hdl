@@ -16,6 +16,10 @@ spec:
     matchLabels:
       app.kubernetes.io/name: ingress-nginx
       release: prometheus-operator
+  namespaceSelector:
+    matchNames:
+      - ingress-nginx
+    any: true
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
