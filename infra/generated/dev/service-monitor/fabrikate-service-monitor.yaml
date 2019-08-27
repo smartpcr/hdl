@@ -20,7 +20,7 @@ spec:
       - ingress-nginx
     any: true
   endpoints:
-  - port: metrics
+  - port: 10254
     interval: 15s
     path: /metrics
 ---
